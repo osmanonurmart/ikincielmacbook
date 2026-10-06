@@ -17,6 +17,16 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+.step { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.step:first-child { border-top: 0; }
+.step input { width: 22px; height: 22px; margin-top: 2px; accent-color: var(--ok); }
+.step .st { font-weight: 600; }
+.step.done .st { color: var(--muted); text-decoration: line-through; }
+.step ul { margin: 4px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+.step .go { margin-top: 6px; }
+.step-h { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin: 16px 0 0; }
+.step.warn .st { color: var(--bad); }
+
 #qr { background: #fff; padding: 8px; border-radius: 8px; width: min(320px, 100%); }
 #qr svg { display: block; width: 100%; height: auto; }
 #urlOut { word-break: break-all; font-size: 12px; }
@@ -114,19 +124,22 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 </header>
 
 <main>
+<!-- ADIM ADIM -->
+<section class="tab" id="tab-adim" data-title="Adım Adım">
+  <div class="card">
+    <h2>Yapılacaklar sırası</h2>
+    <p class="muted">Yukarıdan aşağıya git. Bitirdiğin adımın kutusunu işaretle. Düğmeler seni ilgili sekmeye götürür; işin bitince bu sekmeye geri dön.</p>
+    <p id="stepProg"></p>
+    <div id="steps"></div>
+    <p><button class="btn sec" id="stepReset">İşaretleri temizle</button></p>
+  </div>
+</section>
+
 <!-- KONTROL LİSTESİ -->
 <section class="tab" id="tab-liste" data-title="Kontrol Listesi">
   <div class="card">
     <h2>Mac'i ilk kez kullanıyorsan önce bunu oku</h2>
-    <h3>Önerilen sıra</h3>
-    <ol>
-      <li>Satıcı Mac'i açsın ve kendi şifresiyle giriş yapsın. Testleri onun hesabı açıkken yapacaksın.</li>
-      <li>Mac'te <b>Safari</b>'yi aç (ekranın altındaki simge şeridinde pusula simgesi) ve adres çubuğuna bu sayfanın adresini yaz.</li>
-      <li>Önce <b>Sistem & Batarya</b> sekmesindeki Terminal kontrolünü çalıştır. Kilitleri ve bataryayı otomatik kontrol eder.</li>
-      <li>Sonra bu listeyi yukarıdan aşağıya doğru git. Her maddenin altında nereye tıklayacağın yazıyor.</li>
-      <li>Diğer sekmelerdeki (Ekran, Klavye, Trackpad, Ses, Kamera) testleri yap.</li>
-      <li>En son satıcının önünde cihazı sıfırlat (Kilitler bölümündeki son madde) ve <b>Rapor</b> sekmesine bak.</li>
-    </ol>
+    <p>Ne zaman ne yapacağın <b>Adım Adım</b> sekmesinde sırayla yazıyor. Bu listeyi o adımlarda işaretleyeceksin.</p>
     <h3>Mac'te temel şeyler</h3>
     <ul>
       <li><b>Elma menüsü ()</b>: ekranın sol üst köşesindeki elma. Bu Mac Hakkında, Sistem Ayarları, Kapat, Yeniden Başlat buradadır.</li>
@@ -1020,6 +1033,58 @@ document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => {
   setTimeout(() => b.textContent = old, 2500);
 });
 
+// ---------- Adım adım ----------
+const STEPS = [
+  ["Evden çıkmadan önce"],
+  ["Telefonunu şarj et. Yanına kablolu kulaklık ve varsa USB-C bellek al.", []],
+  ["Bu siteyi telefonunda bir kez aç, Rapor sekmesindeki QR'ı başka bir ekrandan okutmayı dene.", []],
+  ["Satıcının yanında"],
+  ["Dış kontrol (Mac kapalıyken)", ["Kasada ezik, çatlak olmamalı.", "Ters çevir: alt kasa düz, vidalar sağlam olmalı.", "Trackpad kabarık olmamalı (kabarıksa pil şişmiştir, alma).", "Telefon feneriyle port içlerine bak: pas olmamalı."], "tab-liste", "Dış görünüş maddeleri"],
+  ["Satıcı Mac'i açsın ve kendi şifresiyle giriş yapsın.", ["Testlerin hepsini onun hesabı açıkken yapacaksın."]],
+  ["Wi-Fi'a bağlan.", ["Sağ üstteki Wi-Fi simgesi → ağı seç. Yoksa telefonunun hotspot'unu aç."]],
+  ["Safari'de bu siteyi aç ve modelini seç.", ["Dock'taki pusula simgesi → adres çubuğuna osmanonurmart.github.io/ikincielmacbook yaz.", "Kontrol Listesi sekmesinin en üstünden modeli seç."], "tab-liste", "Model seç"],
+  ["Terminal kontrolünü çalıştır.", ["Komutu kopyala → Terminal'e yapıştır → Enter.", "Kırmızı (✘) satır varsa not al."], "tab-sistem", "Sistem & Batarya"],
+  ["Kilitleri kontrol et.", ["Mac'imi Bul kapalı mı?", "Şirket yönetimi (MDM) yok mu?", "Terminal çıktısında Activation Lock kapalı mı?"], "tab-liste", "Kilitler"],
+  ["Model, RAM, SSD ve seri numarasını ilanla karşılaştır.", ["Bu Mac Hakkında penceresine bak.", "Seri noyu telefondan checkcoverage.apple.com'da sorgula."], "tab-liste", "Belgeler"],
+  ["Pil döngü sayısı ve kapasitesini yaz.", [], "tab-sistem", "Sistem & Batarya"],
+  ["Ekran testleri.", ["Renk testleri, ışık sızması, çatlak.", "Kapağı kapatıp aç (uyku testi)."], "tab-ekran", "Ekran"],
+  ["Klavye testi.", ["Bütün tuşlar, klavye ışığı, Touch ID."], "tab-klavye", "Klavye"],
+  ["Trackpad testi.", ["Tıklama, sağ tık, kaydırma, Force Click."], "tab-trackpad", "Trackpad"],
+  ["Hoparlör ve mikrofon testi.", ["Sol/sağ ses, bas taraması, kulaklık, mikrofon kaydı."], "tab-ses", "Hoparlör & Mikrofon"],
+  ["Kamera testi.", ["Görüntü net olmalı, yeşil ışık yanmalı."], "tab-kamera", "Kamera"],
+  ["Portları dene.", ["Şarj kablosunu her porta tak: pil simgesinde şimşek çıkmalı.", "Belleği veya telefonu her porta tak."], "tab-liste", "Portlar ve şarj"],
+  ["Bluetooth'a telefonunu bağla.", [], "tab-liste", "Kontrol listesi"],
+  ["Stres testini çalıştır (5 dakika).", ["Terminal'de stres komutunu çalıştır.", "Beklerken kontrol listesindeki kalan maddeleri işaretle. Mac kapanmamalı."], "tab-sistem", "Stres komutu"],
+  ["Apple Diagnostics çalıştır.", ["Mac'i kapat → güç tuşuna basılı tut → Cmd+D.", "Sonuç ADP000 olmalı.", "Bitince Mac'i yeniden başlat, satıcı tekrar giriş yapsın, bu siteyi yeniden aç."], "tab-sistem", "Nasıl yapılır"],
+  ["Rapor sekmesindeki QR'ın fotoğrafını çek.", ["Telefonla okutup açıldığını gör.", "Bu adımı sıfırlamadan önce mutlaka yap, sıfırlayınca sonuçlar Mac'ten silinir."], "tab-rapor", "Rapor"],
+  ["Parayı vermeden önce"],
+  ["Satıcının önünde Mac'i sıfırlat.", ["Sistem Ayarları → Genel → Aktar veya Sıfırla → Tüm İçerikleri ve Ayarları Sil.", "Satıcı Mac şifresini ve Apple hesabı şifresini girer."]],
+  ["Kurulum ekranında dil seç ve Wi-Fi'a bağlan.", ["\"Etkinleştirme Kilidi\" veya \"Uzaktan Yönetim\" ekranı ÇIKMAMALI. Çıkarsa alma."], null, null, true],
+];
+function renderSteps() {
+  const done = state.info.steps || {};
+  const el = document.getElementById("steps");
+  el.innerHTML = "";
+  let n = 0, total = 0, doneN = 0;
+  STEPS.forEach(([t, sub, tab, label, warn]) => {
+    if (!sub) { el.insertAdjacentHTML("beforeend", `<div class="step-h">${t}</div>`); return; }
+    const k = ++n; total++; if (done[k]) doneN++;
+    const d = document.createElement("label");
+    d.className = "step" + (done[k] ? " done" : "") + (warn ? " warn" : "");
+    d.innerHTML = `<input type="checkbox" ${done[k] ? "checked" : ""}><div><div class="st">${k}. ${t}</div>` +
+      (sub.length ? `<ul>${sub.map(x => `<li>${x}</li>`).join("")}</ul>` : "") +
+      (tab ? `<button class="btn sec go" type="button">${label} →</button>` : "") + `</div>`;
+    d.querySelector("input").onchange = e => {
+      state.info.steps = Object.assign(state.info.steps || {}, { [k]: e.target.checked }); save(); renderSteps();
+    };
+    if (tab) d.querySelector(".go").onclick = e => { e.preventDefault(); showTab(tab); scrollTo(0, 0); };
+    el.appendChild(d);
+  });
+  document.getElementById("stepProg").innerHTML = `<b>${doneN}/${total}</b> adım tamamlandı`;
+}
+document.getElementById("stepReset").onclick = () => { state.info.steps = {}; save(); renderSteps(); };
+renderSteps();
+
 // ---------- Rapor ----------
 const INFO_LABELS = { cyc: "Batarya döngü", cap: "Batarya kapasite %" };
 function renderReport() {
@@ -1080,7 +1145,7 @@ document.getElementById("resetAll").onclick = () => {
 
 // ---------- Başlat ----------
 refresh();
-let startTab = "tab-liste";
+let startTab = "tab-adim";
 try { startTab = localStorage.getItem(KEY + "-tab") || startTab; } catch (e) {}
 if (imported) {
   startTab = "tab-rapor";
@@ -1090,7 +1155,7 @@ if (imported) {
     ? "QR kod okunamadı veya eksik. Fotoğrafı daha net çekip tekrar dene."
     : `Test tarihi: <b>${imported.date}</b>${imported.label ? "<br>" + imported.label.replace(/</g, "&lt;") : ""}<br>Sonuçlar bu cihaza kaydedildi. Kontrol Listesi sekmesinde madde madde görebilir, notları düzenleyebilirsin.`;
 }
-showTab(document.getElementById(startTab) ? startTab : "tab-liste");
+showTab(document.getElementById(startTab) ? startTab : "tab-adim");
 </script>
 </body>
 </html>
