@@ -23,3 +23,8 @@ GitHub Pages açarsan (Settings → Pages → main branch) uygulama doğrudan li
 - Activation Lock / Mac'imi Bul açık ve satıcı kapatmıyor
 - MDM / DEP (kurumsal) kaydı var
 - Batarya şişmiş (trackpad yükselmiş, kasa bombeli)
+
+## Sonuçları telefona alma (QR)
+Rapor sekmesinde bir QR kod çıkar. Telefonla okutunca veya fotoğrafını çekip sonra açınca bütün sonuçlar ve notlar
+telefonda açılır. Sonuçlar linkin içindedir, hiçbir sunucuya gönderilmez.
+`vendor/` klasöründeki kütüphaneler: qrcode-generator (MIT, Kazuhiko Arase), lz-string (MIT, Pieroxy).

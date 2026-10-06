@@ -16,6 +16,11 @@
     --warn: #d29922; --warn-bg: #2b2111; --key: #2c2c2e; --key-on: #30d158; }
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
+#qr { background: #fff; padding: 8px; border-radius: 8px; width: min(320px, 100%); }
+#qr svg { display: block; width: 100%; height: auto; }
+#urlOut { word-break: break-all; font-size: 12px; }
+.hist { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
 body { margin: 0; background: var(--bg); color: var(--text);
   font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; }
 header { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
@@ -352,6 +357,33 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 
 <!-- RAPOR -->
 <section class="tab" id="tab-rapor" data-title="Rapor">
+  <div class="card" id="importBanner" hidden style="border-color:var(--accent)">
+    <h2>QR'dan yüklenen test sonucu</h2>
+    <p id="importInfo"></p>
+  </div>
+  <div class="card" id="qrCard">
+    <h2>Sonucu telefonuna al (QR)</h2>
+    <p><b>Mac'i sıfırlamadan önce yap.</b> Sıfırlayınca bu sayfadaki sonuçlar Mac'ten silinir.</p>
+    <div class="grid2">
+      <div id="qr"></div>
+      <ol>
+        <li><b>Hemen açmak için:</b> telefonunun kamerasını açıp bu QR koda tut. Çıkan linke dokun. Bütün sonuçlar ve notlar telefonunda açılır ve telefona kaydedilir.</li>
+        <li><b>Sonra açmak için:</b> QR'ın fotoğrafını çek. Evde:
+          <ul>
+            <li><b>iPhone:</b> Fotoğraflar'da fotoğrafı aç, QR'a basılı tut → <b>Safari'de Aç</b>.</li>
+            <li><b>Android:</b> fotoğrafı aç → alttaki <b>Lens</b> düğmesine bas → çıkan linke dokun.</li>
+          </ul>
+        </li>
+        <li>Testte değişiklik yaparsan QR kendiliğinden güncellenir. En son halinin fotoğrafını çek.</li>
+      </ol>
+    </div>
+    <p><button class="btn sec" id="copyUrl">Linki kopyala</button></p>
+    <p class="muted" id="urlOut"></p>
+  </div>
+  <div class="card" id="histCard" hidden>
+    <h2>Bu cihaza yüklenen testler</h2>
+    <div id="histList"></div>
+  </div>
   <div class="card">
     <h2>Özet</h2>
     <div id="summary"></div>
@@ -366,6 +398,8 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 </main>
 
 <div id="fs"><div id="fsHint"></div></div>
+<script src="vendor/lz-string.min.js"></script>
+<script src="vendor/qrcode.js"></script>
 
 <script>
 // ---------- Depolama ----------
@@ -583,6 +617,44 @@ function buildSections(m) {
   ]},
   ];
 }
+// ---------- QR / link ile paylaşma ----------
+// Sıra sadece sona ekleyerek değişmeli: eski QR'lar bu sıraya göre okunur.
+const UIDS = [...new Set(Object.values(MODELS).flatMap(m => buildSections(m).flatMap(s => s.items.map(i => i[0]))))];
+const SITE = location.protocol === "file:" ? "https://osmanonurmart.github.io/ikincielmacbook/" : location.origin + location.pathname;
+const INFO_KEYS = ["satici", "fiyat", "ilanModel", "seri", "cyc", "cap"];
+const ST = { ok: "1", fail: "2", skip: "3" }, ST_R = { 1: "ok", 2: "fail", 3: "skip" };
+function encodeResult() {
+  const i = {}, n = {};
+  INFO_KEYS.forEach(k => { if (state.info[k]) i[k] = state.info[k]; });
+  const s = UIDS.map((id, idx) => { const r = state.r[id] || {}; if (r.n) n[idx] = r.n; return ST[r.s] || "0"; }).join("").replace(/0+$/, "");
+  return LZString.compressToEncodedURIComponent(JSON.stringify({ v: 1, m: state.info.model || "air13", t: Date.now(), i, s, n }));
+}
+function decodeResult(code) {
+  const p = JSON.parse(LZString.decompressFromEncodedURIComponent(code));
+  const r = {};
+  UIDS.forEach((id, idx) => {
+    const st = ST_R[p.s[idx]], note = p.n[idx];
+    if (st || note) r[id] = { s: st || null, n: note || "" };
+  });
+  return { p, state: { r, info: Object.assign({}, p.i, { model: p.m, kbIso: state.info.kbIso }) } };
+}
+function histLoad() { try { return JSON.parse(localStorage.getItem(KEY + "-hist")) || []; } catch (e) { return []; } }
+function histSave(h) { try { localStorage.setItem(KEY + "-hist", JSON.stringify(h)); } catch (e) {} }
+function applyCode(code) {
+  const d = decodeResult(code);
+  state = d.state; save();
+  const label = [d.p.i.satici, d.p.i.ilanModel, MODELS[d.p.m]?.name].filter(Boolean).join(" · ");
+  const h = histLoad().filter(x => x.t !== d.p.t);
+  h.unshift({ t: d.p.t, label, code }); histSave(h.slice(0, 20));
+  return { date: new Date(d.p.t).toLocaleString("tr-TR"), label };
+}
+let imported = null;
+const hashCode = location.hash.match(/^#r=(.+)$/);
+if (hashCode) {
+  try { imported = applyCode(hashCode[1]); } catch (e) { imported = { error: true }; }
+  history.replaceState(null, "", location.pathname);
+}
+
 let MODEL = MODELS[state.info.model] ? state.info.model : "air13";
 let SECTIONS = buildSections(MODELS[MODEL]);
 let ALL_ITEMS = SECTIONS.flatMap(s => s.items);
@@ -989,7 +1061,26 @@ function renderReport() {
     });
   });
   document.getElementById("reportText").textContent = txt;
+
+  const url = SITE + "#r=" + encodeResult();
+  const qr = qrcode(0, "M"); qr.addData(url); qr.make();
+  document.getElementById("qr").innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  document.getElementById("urlOut").textContent = url;
+
+  const h = histLoad();
+  document.getElementById("histCard").hidden = !h.length;
+  document.getElementById("histList").innerHTML = h.map((x, k) =>
+    `<div class="hist"><span>${new Date(x.t).toLocaleString("tr-TR")}${x.label ? " — " + x.label.replace(/</g, "&lt;") : ""}</span><button class="btn sec" data-hist="${k}">Aç</button></div>`).join("");
+  document.querySelectorAll("[data-hist]").forEach(b => b.onclick = () => {
+    location.hash = "r=" + h[+b.dataset.hist].code; location.reload();
+  });
 }
+document.getElementById("copyUrl").onclick = async e => {
+  const t = document.getElementById("urlOut").textContent;
+  try { await navigator.clipboard.writeText(t); e.target.textContent = "Kopyalandı"; }
+  catch (err) { getSelection().selectAllChildren(document.getElementById("urlOut")); e.target.textContent = "Seçildi, kopyala"; }
+  setTimeout(() => e.target.textContent = "Linki kopyala", 2500);
+};
 document.getElementById("copyReport").onclick = async () => {
   const txt = document.getElementById("reportText").textContent;
   try { await navigator.clipboard.writeText(txt); alert("Rapor kopyalandı."); }
@@ -1004,6 +1095,14 @@ document.getElementById("resetAll").onclick = () => {
 refresh();
 let startTab = "tab-liste";
 try { startTab = localStorage.getItem(KEY + "-tab") || startTab; } catch (e) {}
+if (imported) {
+  startTab = "tab-rapor";
+  document.getElementById("importBanner").hidden = false;
+  document.getElementById("qrCard").hidden = true;
+  document.getElementById("importInfo").innerHTML = imported.error
+    ? "QR kod okunamadı veya eksik. Fotoğrafı daha net çekip tekrar dene."
+    : `Test tarihi: <b>${imported.date}</b>${imported.label ? "<br>" + imported.label.replace(/</g, "&lt;") : ""}<br>Sonuçlar bu cihaza kaydedildi. Kontrol Listesi sekmesinde madde madde görebilir, notları düzenleyebilirsin.`;
+}
 showTab(document.getElementById(startTab) ? startTab : "tab-liste");
 </script>
 </body>
