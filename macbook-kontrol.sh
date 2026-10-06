@@ -1,5 +1,5 @@
 #!/bin/bash
-# İkinci el MacBook otomatik kontrol betiği.
+# İkinci el MacBook M2 otomatik kontrol betiği.
 # Kullanım:  bash macbook-kontrol.sh            -> sistem raporu
 #            bash macbook-kontrol.sh --stres 5  -> rapor + 5 dakika CPU stres testi
 # Hiçbir şeyi değiştirmez, sadece okur. sudo gerekmez.
@@ -37,6 +37,28 @@ info "Seri no:      $SERIAL"
 info "macOS:        $(sw_vers -productVersion) ($(sw_vers -buildVersion))"
 info "Açık kalma:   $(uptime | sed 's/.*up \([^,]*\),.*/\1/')"
 echo "    -> Seri numarasını checkcoverage.apple.com'da sorgula, kutu/fatura ile karşılaştır."
+
+# ---------------- M2 doğrulama ----------------
+title "M2 model doğrulama"
+MID=$(val "$HW" "Model Identifier")
+case "$MID" in
+  Mac14,2)  EXP="MacBook Air 13\" M2 (2022), A2681"; FAN=0 ;;
+  Mac14,15) EXP="MacBook Air 15\" M2 (2023), A2941"; FAN=0 ;;
+  Mac14,7)  EXP="MacBook Pro 13\" M2 (2022), A2338"; FAN=1 ;;
+  Mac14,9)  EXP="MacBook Pro 14\" M2 Pro (2023), A2779"; FAN=1 ;;
+  Mac14,5)  EXP="MacBook Pro 14\" M2 Max (2023), A2779"; FAN=1 ;;
+  Mac14,10) EXP="MacBook Pro 16\" M2 Pro (2023), A2780"; FAN=1 ;;
+  Mac14,6)  EXP="MacBook Pro 16\" M2 Max (2023), A2780"; FAN=1 ;;
+  *)        EXP=""; FAN=1 ;;
+esac
+if [ -n "$EXP" ] && echo "$CHIP" | grep -q "M2"; then
+  ok "Gerçek M2 MacBook: $EXP"
+  info "-> İlandaki model ve alt kasadaki model no bununla aynı olmalı."
+else
+  bad "Bu cihaz bir M2 MacBook değil! (Kimlik: $MID, Çip: $CHIP)"
+fi
+GPU=$(system_profiler SPDisplaysDataType 2>/dev/null | grep -m1 "Total Number of Cores" | sed 's/^[^:]*: *//')
+[ -n "$GPU" ] && info "GPU çekirdek:  $GPU (temel M2 Air 8 çekirdek, üst sürüm 10 çekirdek)"
 
 # ---------------- Kilitler ----------------
 title "Kilitler ve sahiplik"
@@ -76,10 +98,7 @@ SIP=$(csrutil status 2>/dev/null)
 if echo "$SIP" | grep -q "enabled."; then ok "SIP (Sistem Bütünlük Koruması): açık"
 else warn "SIP kapalı/değiştirilmiş — sistemle oynanmış olabilir ($SIP)"; fi
 
-if [ "$(uname -m)" = "x86_64" ]; then
-  info "Intel Mac: firmware şifresi için açılışta Option'a bas; şifre sorarsa satıcı kaldırmalı."
-  info "(Kontrol: sudo firmwarepasswd -check)"
-fi
+info "Recovery şifresi: Mac'i kapat, güç tuşuna basılı tut -> Seçenekler. Şifre sormamalı."
 
 # ---------------- Batarya ----------------
 title "Batarya"
@@ -201,7 +220,7 @@ else
 fi
 echo
 echo "Şimdi index.html'deki elle testleri yap (ekran, klavye, trackpad, ses, kamera, portlar)"
-echo "ve Apple Diagnostics çalıştır (Apple Silicon: güç tuşu basılı açılış -> Cmd+D, Intel: açılışta D)."
+echo "ve Apple Diagnostics çalıştır (güç tuşu basılı açılış -> Seçenekler ekranında Cmd+D)."
 
 # ---------------- Stres testi ----------------
 if [ "$1" = "--stres" ]; then
@@ -222,6 +241,10 @@ if [ "$1" = "--stres" ]; then
     sleep 15
   done
   kill $PIDS 2>/dev/null
-  echo "  ${G}Stres testi bitti.${N} Cihaz kapanmadıysa ve fan çalıştıysa sorun yok."
-  echo "  CPU_Speed_Limit 100'ün çok altına düştüyse soğutma/termal macun sorunu olabilir (Intel)."
+  echo "  ${G}Stres testi bitti.${N} Cihaz kapanmadıysa sorun yok."
+  if [ "$FAN" = "0" ]; then
+    echo "  Air'de fan yok: ısınıp yavaşlaması normaldir."
+  else
+    echo "  Fan devreye girmiş olmalı; tıkırtı veya sürtünme sesi olmamalı."
+  fi
 fi

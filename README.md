@@ -1,6 +1,6 @@
-# İkinci El MacBook Test Uygulaması
+# İkinci El MacBook M2 Test Uygulaması
 
-İkinci el MacBook alırken satıcının yanında yapılacak tüm kontroller.
+İkinci el MacBook M2 (Air 13/15, Pro 13/14/16) alırken satıcının yanında yapılacak tüm kontroller. Sayfada modeli seç, kontrol listesi o modele göre değişir.
 
 ## Kullanım
 
@@ -22,5 +22,4 @@ GitHub Pages açarsan (Settings → Pages → main branch) uygulama doğrudan li
 ## Asla alma
 - Activation Lock / Mac'imi Bul açık ve satıcı kapatmıyor
 - MDM / DEP (kurumsal) kaydı var
-- Firmware şifresi var
 - Batarya şişmiş (trackpad yükselmiş, kasa bombeli)

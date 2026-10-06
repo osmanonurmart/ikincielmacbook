@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>İkinci El MacBook Testi</title>
+<title>İkinci El MacBook M2 Testi</title>
 <style>
 :root {
   --bg: #f5f5f7; --panel: #ffffff; --text: #1d1d1f; --muted: #6e6e73; --line: #d2d2d7;
@@ -53,7 +53,7 @@ section.tab.active { display: block; }
   font-size: 14px; cursor: pointer; margin: 2px 4px 2px 0; }
 .btn.sec { background: var(--key); color: var(--text); }
 .btn.danger { background: var(--bad); }
-input[type=text], input[type=number], textarea { width: 100%; padding: 7px 10px; border: 1px solid var(--line);
+select, input[type=text], input[type=number], textarea { width: 100%; padding: 7px 10px; border: 1px solid var(--line);
   border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; font-size: 14px; }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
 label.f { display: block; font-size: 13px; color: var(--muted); }
@@ -98,7 +98,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <body>
 <header>
   <div class="top">
-    <h1>İkinci El MacBook Testi</h1>
+    <h1>MacBook M2 Testi</h1>
     <div class="progress"><div id="progBar"></div></div>
     <span id="progText"></span>
   </div>
@@ -109,11 +109,16 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <!-- KONTROL LİSTESİ -->
 <section class="tab" id="tab-liste" data-title="Kontrol Listesi">
   <div class="card">
+    <h2>Model: <span id="h1model"></span></h2>
+    <select id="modelSel" style="max-width:420px;font-size:15px"></select>
+    <div id="modelInfo" class="muted"></div>
+  </div>
+  <div class="card">
     <h2>İlan / cihaz bilgileri</h2>
     <div class="grid2">
       <label class="f">Satıcı<input type="text" data-info="satici"></label>
       <label class="f">Fiyat<input type="text" data-info="fiyat"></label>
-      <label class="f">İlandaki model (yıl / çip / RAM / SSD)<input type="text" data-info="ilanModel"></label>
+      <label class="f">İlandaki yapılandırma (RAM / SSD / renk)<input type="text" data-info="ilanModel"></label>
       <label class="f">Cihazdaki seri no<input type="text" data-info="seri"></label>
     </div>
     <p class="muted">Her maddeyi işaretle. "Kaldı" seçince not alanı açılır. Veriler sadece bu tarayıcıda saklanır.</p>
@@ -139,13 +144,12 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
       <label class="f">Maksimum kapasite (%)<input type="number" id="cap" min="0" max="120"></label>
     </div>
     <p id="batVerdict"></p>
-    <p class="muted">Apple'ın tasarım ömrü 2009 sonrası MacBook'lar için 1000 döngüdür. %80 altı = "Servis Önerilir".
+    <p class="muted">M2 bataryalar 1000 döngü için tasarlanmıştır. %80 altı = "Servis Önerilir".
       Batarya değişimi pahalıdır, fiyattan düşmek için kullan.</p>
   </div>
   <div class="card">
     <h2>Apple Diagnostics (donanım teşhisi)</h2>
-    <p><b>Apple Silicon (M1/M2/M3/M4…):</b> Mac'i kapat → güç tuşuna "Başlangıç seçenekleri yükleniyor" yazana kadar basılı tut → Cmd+D.</p>
-    <p><b>Intel:</b> Mac'i aç ve hemen D tuşuna basılı tut.</p>
+    <p>Adaptörü tak, Mac'i kapat → güç (Touch ID) tuşuna "Başlangıç seçenekleri yükleniyor" yazana kadar basılı tut → Cmd+D.</p>
     <p class="muted">Sonuçta referans kodu çıkar (ör. ADP000 = sorun yok). Kodu kontrol listesindeki nota yaz.</p>
   </div>
   <div class="card">
@@ -164,12 +168,15 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
     <button class="btn" data-fs="black">Işık sızması (siyah)</button>
     <button class="btn" data-fs="gradients">Geçiş / bantlanma</button>
     <button class="btn" data-fs="pattern">Keskinlik / desen</button>
+    <button class="btn sec" id="hzBtn">Yenileme hızını ölç</button>
+    <p id="hzOut" class="muted"></p>
     <h3>Neye bakılır</h3>
     <ul>
       <li><b>Düz renkler:</b> farklı renkte kalan nokta (takılı piksel), hep siyah nokta (ölü piksel), lekeler, sarımsı/pembe bölgeler.</li>
-      <li><b>Siyah:</b> odayı karart; kenarlardan ışık sızması, beyazımsı bulutlanma. Mini-LED modellerde (14/16" 2021+) parlak objelerin etrafında hafif hale normaldir.</li>
-      <li><b>Kaplama soyulması (staingate):</b> ekran kapalıyken eğik ışıkta lekeli/silinmiş görüntü — özellikle 2013-2017 Retina modellerde.</li>
-      <li><b>Flexgate (2016-2018 MBP 13"/15"):</b> ekranı geniş açıya (~110°+) açınca alt kenarda "sahne ışığı" gölgeleri veya görüntünün gitmesi.</li>
+      <li><b>Siyah:</b> odayı karart; kenarlardan ışık sızması, beyazımsı bulutlanma. Pro 14/16 (mini-LED) modellerde parlak nesne etrafında hafif hale normaldir.</li>
+      <li><b>Çatlak (özellikle Air):</b> beyaz ekranda köşelerde ve alt kenarda ince çizgi, renkli lekeler. Kapak arasına cisim girince M2 Air ekranı kolay çatlar.</li>
+      <li><b>Klavye izi:</b> ekran kapalıyken ışığa eğik tut; tuş şeklinde lekeler kaplama aşınmasıdır.</li>
+      <li><b>Çentik:</b> Air ve Pro 14/16'da kamera çentiği normaldir; çevresinde ölü piksel olmamalı.</li>
       <li>Kapağı yavaşça açıp kapat: titreme, görüntü kopması, menteşe gevşekliği.</li>
       <li>Parlaklık tuşları ve True Tone (Ayarlar → Ekranlar) çalışıyor mu.</li>
     </ul>
@@ -181,7 +188,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <section class="tab" id="tab-klavye" data-title="Klavye">
   <div class="card">
     <h2>Klavye testi</h2>
-    <div class="alert">Cmd+W / Cmd+Q sekmeyi kapatır — Cmd tuşlarına <b>tek başına</b> bas. F1–F12 için <b>fn</b> basılı tut (Touch Bar'lı modellerde F satırı yoktur, atla).</div>
+    <div class="alert">Cmd+W / Cmd+Q sekmeyi kapatır — Cmd tuşlarına <b>tek başına</b> bas. F1–F12 için <b>fn</b> (🌐) basılı tut. Pro 13" modelde F satırı yerine Touch Bar vardır, sadece esc görünür.</div>
     <p>Düzen:
       <button class="btn sec" id="kbIso">ISO (Türkçe Q / Avrupa)</button>
       <button class="btn sec" id="kbAnsi">ANSI (ABD)</button>
@@ -190,7 +197,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
     <div class="kb" id="kb"></div>
     <p><b id="kbCount"></b> &nbsp; <span class="muted">Son tuş: <code id="kbLast">—</code></span></p>
     <p id="kbDbl" class="muted"></p>
-    <p class="muted">Kesik çizgili tuşlar (fn, Touch ID) tarayıcıya sinyal göndermez — elle kontrol et. Kırmızı = 60 ms içinde çift basma algılandı (kelebek klavye arızası belirtisi).</p>
+    <p class="muted">Kesik çizgili tuşlar (fn, Touch ID) tarayıcıya sinyal göndermez — elle kontrol et. Kırmızı = 60 ms içinde çift basma algılandı (tuş arızası belirtisi).</p>
     <h3>Yazma denemesi</h3>
     <textarea rows="3" placeholder="Buraya birkaç cümle yaz: tuş takılması, harf atlama, çift harf var mı?"></textarea>
     <p class="muted">Ayrıca: klavye arka ışığı (Ayarlar → Klavye / Kontrol Merkezi), Touch ID'ye parmak ekleyip kilit açmayı dene, Touch Bar'ın her yerine dokun.</p>
@@ -268,76 +275,107 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <div id="fs"><div id="fsHint"></div></div>
 
 <script>
-// ---------- Veri ----------
-const SECTIONS = [
+// ---------- Depolama ----------
+const KEY = "macbook-test-v1";
+let state = { r: {}, info: {} };
+try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+// ---------- M2 modelleri ----------
+const MODELS = {
+  air13: { name: "MacBook Air 13\" M2 (2022)", ids: ["Mac14,2"], a: "A2681",
+    ports: "Sol: 2× Thunderbolt / USB 4 + MagSafe 3. Sağ: 3,5 mm kulaklık.",
+    charger: "30W, 35W çift port veya 67W (hızlı şarj için 67W)", wh: 52.6,
+    display: "13,6\" Liquid Retina, 2560×1664, 60 Hz, çentikli", fan: false, touchbar: false, magsafe: true, pro: false, hz: 60 },
+  air15: { name: "MacBook Air 15\" M2 (2023)", ids: ["Mac14,15"], a: "A2941",
+    ports: "Sol: 2× Thunderbolt / USB 4 + MagSafe 3. Sağ: 3,5 mm kulaklık.",
+    charger: "35W çift port veya 70W", wh: 66.5,
+    display: "15,3\" Liquid Retina, 2880×1864, 60 Hz, çentikli", fan: false, touchbar: false, magsafe: true, pro: false, hz: 60 },
+  pro13: { name: "MacBook Pro 13\" M2 (2022)", ids: ["Mac14,7"], a: "A2338",
+    ports: "Sol: 2× Thunderbolt / USB 4 (şarj buradan). Sağ: 3,5 mm kulaklık. MagSafe yok.",
+    charger: "67W USB-C", wh: 58.2,
+    display: "13,3\" Retina, 2560×1600, 60 Hz, çentiksiz, Touch Bar'lı", fan: true, touchbar: true, magsafe: false, pro: false, hz: 60 },
+  pro14: { name: "MacBook Pro 14\" M2 Pro/Max (2023)", ids: ["Mac14,9", "Mac14,5"], a: "A2779",
+    ports: "Sol: MagSafe 3, 2× Thunderbolt 4, 3,5 mm kulaklık. Sağ: HDMI, Thunderbolt 4, SDXC kart okuyucu.",
+    charger: "67W (M2 Pro temel) veya 96W", wh: 70,
+    display: "14,2\" Liquid Retina XDR (mini-LED), 3024×1964, 120 Hz ProMotion, çentikli", fan: true, touchbar: false, magsafe: true, pro: true, hz: 120 },
+  pro16: { name: "MacBook Pro 16\" M2 Pro/Max (2023)", ids: ["Mac14,10", "Mac14,6"], a: "A2780",
+    ports: "Sol: MagSafe 3, 2× Thunderbolt 4, 3,5 mm kulaklık. Sağ: HDMI, Thunderbolt 4, SDXC kart okuyucu.",
+    charger: "140W", wh: 100,
+    display: "16,2\" Liquid Retina XDR (mini-LED), 3456×2234, 120 Hz ProMotion, çentikli", fan: true, touchbar: false, magsafe: true, pro: true, hz: 120 },
+};
+
+// ---------- Kontrol listesi verisi (seçili modele göre) ----------
+function buildSections(m) {
+  const air = !m.fan;
+  return [
   { title: "Belgeler ve sahiplik", items: [
-    ["belge-fatura", "Fatura / kutu var", "Faturadaki ve kutudaki seri no cihazla aynı mı?"],
+    ["belge-fatura", "Fatura / kutu var", "Faturadaki ve kutudaki seri no cihazla aynı mı? Türkiye'de faturalı ürün 2 yıl yasal garantilidir, fatura tarihine bak."],
     ["belge-seri", "Seri no doğrulandı", "checkcoverage.apple.com'da model ve tarih ilanla tutuyor mu?"],
-    ["belge-model", "Model / RAM / SSD ilanla aynı", "Apple menüsü → Bu Mac Hakkında. İlanda yazanla birebir karşılaştır."],
+    ["belge-model", `Model gerçekten ${m.name}`, `Bu Mac Hakkında'da çip "Apple M2${m.pro ? " Pro / M2 Max" : ""}" yazmalı. Alt kasadaki model no: ${m.a}. Betik model kimliğini (${m.ids.join(" / ")}) kontrol eder.`],
+    ["belge-ram", "RAM / SSD ilanla aynı", m.pro ? "Bu Mac Hakkında → Bellek ve Depolama." : "8 GB / 256 GB temel modelde SSD tek çipli ve daha yavaştır. Arıza değil ama fiyata yansımalı. 16 GB+ tercih sebebi."],
   ]},
   { title: "Kilitler (en kritik bölüm)", items: [
-    ["kilit-activation", "Activation Lock kapalı", "Betik çıktısında 'Activation Lock: Disabled' olmalı. Açıksa ASLA alma."],
+    ["kilit-activation", "Activation Lock kapalı", "Betik çıktısında 'Activation Lock: kapalı' olmalı. Açıksa ASLA alma."],
     ["kilit-findmy", "Mac'imi Bul kapalı, Apple ID çıkışı yapılmış", "Ayarlar → [isim] → Çıkış Yap. Satıcının önünde yapılmalı."],
     ["kilit-mdm", "MDM / kurumsal kayıt yok", "Betikte 'Enrolled via DEP: No' ve 'MDM enrollment: No' olmalı. Şirket cihazı ise sıfırlamadan sonra kilitlenir."],
-    ["kilit-firmware", "Firmware (EFI) şifresi yok", "Intel: Option basılı açılışta şifre sormamalı. Apple Silicon: güç tuşu basılı açılışta Seçenekler'e şifresiz girilmeli."],
-    ["kilit-reset", "Satıcının önünde sıfırlandı", "Ayarlar → Genel → Aktar veya Sıfırla → Tüm İçerikleri ve Ayarları Sil. Kurulum ekranına gelip internete bağlanınca kilit uyarısı çıkmamalı."],
+    ["kilit-recovery", "Kurtarma modu şifresiz açılıyor", "Mac'i kapat, güç tuşuna basılı tut → 'Seçenekler'e tıkla. Recovery Lock şifresi sormamalı."],
+    ["kilit-reset", "Satıcının önünde sıfırlandı", "Ayarlar → Genel → Aktar veya Sıfırla → Tüm İçerikleri ve Ayarları Sil. Kurulumda internete bağlanınca 'Uzaktan Yönetim' veya kilit ekranı çıkmamalı."],
   ]},
   { title: "Dış görünüş ve kasa", items: [
-    ["kasa-ezik", "Kasada ezik / eğrilik yok", "Düz masada sallanıyor mu? Köşelerde darbe izi var mı?"],
+    ["kasa-ezik", "Kasada ezik / eğrilik yok", "Düz masada sallanıyor mu? Köşelerde darbe izi var mı?" + (air ? " Gece Yarısı (Midnight) renkte kenar ve köşe boya aşınmasına özellikle bak." : "")],
+    ...(air ? [["kasa-catlak", "Ekranda çatlak yok", "M2 Air'de ince ekran, kapak arasına kalem/kulaklık girince köşeden çatlar. Ekranı beyaz yapıp köşelere ve alt kenara bak."]] : []),
     ["kasa-vida", "Alt kapak vidaları sağlam", "Yalanmış / çizik vida başları cihazın açıldığını gösterir. Sor."],
-    ["kasa-sivi", "Sıvı teması izi yok", "Portların içinde yeşil/beyaz korozyon, klavye altında leke, yapışkan tuşlar."],
+    ["kasa-sivi", "Sıvı teması izi yok", "Port içlerinde yeşil/beyaz korozyon, klavye altında leke, yapışkan tuşlar."],
     ["kasa-sisme", "Batarya şişmesi yok", "Trackpad yükselmiş, alt kasa bombeli, kapak tam kapanmıyor = şişik batarya. Alma."],
-    ["kasa-mentese", "Menteşe sağlam", "Ekran her açıda durmalı, kendi kendine düşmemeli; kapak kapalıyken ekranla klavye arası eşit."],
-    ["kasa-ayak", "Lastik ayaklar yerinde", ""],
+    ["kasa-mentese", "Menteşe sağlam", "Ekran her açıda durmalı, tek elle açılabilmeli ama kendi kendine düşmemeli."],
   ]},
   { title: "Ekran", items: [
     ["ekran-piksel", "Ölü piksel / leke / ışık sızması yok", "Ekran sekmesindeki testleri yap."],
-    ["ekran-kaplama", "Kaplama soyulması / çizik yok", "Ekran kapalıyken ışığa tutarak bak."],
-    ["ekran-flex", "Geniş açıda görüntü bozulmuyor", "Ekranı sonuna kadar aç-kapa (flexgate)."],
-    ["ekran-parlaklik", "Parlaklık ve True Tone çalışıyor", ""],
+    ["ekran-iz", "Ekranda klavye izi / kaplama lekesi yok", "Ekranı kapat, ışığa eğik tutarak bak. Klavye tuşlarının izi ekrana çıkmış olabilir."],
+    ...(m.hz === 120 ? [["ekran-promotion", "120 Hz ProMotion çalışıyor", "Ekran sekmesinde yenileme hızını ölç (Chrome'da). Ayarlar → Ekranlar → Yenileme Hızı: ProMotion."]] : []),
+    ...(m.pro ? [["ekran-xdr", "XDR parlaklık / HDR düzgün", "Parlaklığı tam aç. Siyah ekranda parlak nesne etrafında hafif hale (blooming) mini-LED'de normaldir, bölge bölge renk farkı değildir."]] : []),
+    ["ekran-parlaklik", "Parlaklık ve True Tone çalışıyor", "Parlaklık tuşları (F1/F2) ve Ayarlar → Ekranlar → True Tone."],
     ["ekran-uyku", "Kapak kapanınca uyuyor, açınca uyanıyor", ""],
   ]},
   { title: "Klavye ve giriş", items: [
     ["klavye-tuslar", "Tüm tuşlar çalışıyor", "Klavye sekmesi."],
-    ["klavye-isik", "Klavye arka ışığı çalışıyor", "Ortam karanlıkken veya Kontrol Merkezi'nden."],
-    ["klavye-touchid", "Touch ID çalışıyor", "Ayarlar → Touch ID ve Parola → Parmak izi ekle."],
-    ["klavye-touchbar", "Touch Bar düzgün (varsa)", "Her bölgesine dokun, ölü bölge veya titreme olmamalı."],
+    ["klavye-isik", "Klavye arka ışığı çalışıyor", "Kontrol Merkezi → Klavye Parlaklığı."],
+    ["klavye-touchid", "Touch ID çalışıyor", "Ayarlar → Touch ID ve Parola → Parmak izi ekle, kilit ekranında dene."],
+    ...(m.touchbar ? [["klavye-touchbar", "Touch Bar düzgün", "Her bölgesine dokun; ölü bölge, titreme, soluk piksel olmamalı."]] : []),
     ["trackpad", "Trackpad ve Force Touch çalışıyor", "Trackpad sekmesi."],
   ]},
   { title: "Ses, kamera, kablosuz", items: [
     ["hoparlor", "Hoparlörler temiz (cızırtı yok)", "Hoparlör sekmesi."],
     ["kulaklik", "Kulaklık çıkışı çalışıyor", ""],
     ["mikrofon", "Mikrofon çalışıyor", ""],
-    ["kamera", "Kamera çalışıyor", ""],
-    ["wifi", "Wi-Fi bağlanıyor ve stabil", "Bir video aç veya hız testi yap; kopma olmamalı."],
+    ["kamera", m.pro || !m.touchbar ? "1080p FaceTime HD kamera çalışıyor" : "720p FaceTime HD kamera çalışıyor", ""],
+    ["wifi", "Wi-Fi bağlanıyor ve stabil", "Video aç veya hız testi yap; kopma olmamalı."],
     ["bluetooth", "Bluetooth çalışıyor", "Telefonunla veya kulaklığınla eşle."],
   ]},
   { title: "Portlar ve şarj", items: [
-    ["port-sarj", "Her porttan şarj oluyor", "Adaptörü her USB-C/MagSafe portuna tak; şarj simgesi gelmeli."],
-    ["port-veri", "Her port veri aktarıyor", "USB bellek / telefon tak, Finder'da görünmeli."],
-    ["port-diger", "HDMI / SD kart / MagSafe (varsa) çalışıyor", "MagSafe ışığı yanıyor mu?"],
-    ["port-adaptor", "Adaptör orijinal ve doğru watt", "Betik çıktısında adaptör watt değeri görünür."],
+    ["port-sarj", "Her porttan şarj oluyor", (m.magsafe ? "MagSafe 3 takınca ışık yanmalı (turuncu = şarj oluyor, yeşil = dolu). " : "") + "Adaptörü her Thunderbolt portuna da tak, şarj simgesi gelmeli."],
+    ["port-veri", "Her Thunderbolt port veri aktarıyor", "USB bellek / telefon tak, Finder'da görünmeli."],
+    ...(m.pro ? [["port-hdmi", "HDMI ve SD kart okuyucu çalışıyor", "Mümkünse monitör/TV'ye bağla, SD kart tak."]] : []),
+    ["port-adaptor", "Adaptör orijinal ve doğru watt", `Bu model için: ${m.charger}. Betik çıktısında watt görünür.`],
   ]},
   { title: "Batarya ve sağlık", items: [
-    ["bat-dongu", "Döngü sayısı makul", "Sistem & Batarya sekmesinde değerlendir."],
-    ["bat-kapasite", "Kapasite %80 üstü, 'Servis önerilir' yok", ""],
-    ["bat-fis", "Fiş çekilince kapanmıyor", "Şarj %50 civarındayken adaptörü çek, birkaç dakika kullan."],
+    ["bat-dongu", "Döngü sayısı makul", "Sistem & Batarya sekmesinde değerlendir. M2 2022-2023 çıkışlı, çoğu cihaz 100-400 döngü arasında olmalı."],
+    ["bat-kapasite", "Kapasite %80 üstü, 'Servis önerilir' yok", `Tasarım kapasitesi ${m.wh} Wh.`],
+    ["bat-fis", "Fiş çekilince kapanmıyor", "Adaptörü çek, birkaç dakika kullan."],
     ["saglik-diag", "Apple Diagnostics temiz", "Sistem & Batarya sekmesi."],
     ["saglik-smart", "SSD SMART 'Verified'", "Betik çıktısı."],
     ["saglik-panic", "Kernel panic / ani kapanma geçmişi yok", "Betik çıktısı."],
-    ["saglik-stres", "Stres testinde kapanma / aşırı ısınma yok", "bash macbook-kontrol.sh --stres 5 — fan çalışmalı, cihaz kapanmamalı."],
+    ["saglik-stres", "Stres testinde kapanma yok", air
+      ? "bash macbook-kontrol.sh --stres 5 — Air'de fan yok: ısınıp yavaşlaması normal, kapanmamalı."
+      : "bash macbook-kontrol.sh --stres 5 — fan devreye girmeli; tıkırtı, sürtünme sesi olmamalı."],
   ]},
-  { title: "Yazılım", items: [
-    ["yaz-macos", "macOS güncel / güncellenebilir", "Model hâlâ güncel macOS alıyor mu? Eski Intel modeller desteği kaybediyor."],
-  ]},
-];
-const ALL_ITEMS = SECTIONS.flatMap(s => s.items);
+  ];
+}
+let MODEL = MODELS[state.info.model] ? state.info.model : "air13";
+let SECTIONS = buildSections(MODELS[MODEL]);
+let ALL_ITEMS = SECTIONS.flatMap(s => s.items);
 
-// ---------- Depolama ----------
-const KEY = "macbook-test-v1";
-let state = { r: {}, info: {} };
-try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
-function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
 
 // ---------- Sekmeler ----------
 const nav = document.getElementById("nav");
@@ -391,6 +429,8 @@ function refresh() {
 }
 
 const cl = document.getElementById("checklist");
+function renderChecklist() {
+cl.innerHTML = "";
 SECTIONS.forEach(sec => {
   const card = document.createElement("div");
   card.className = "card";
@@ -409,11 +449,32 @@ SECTIONS.forEach(sec => {
   });
   cl.appendChild(card);
 });
+refresh();
+}
+renderChecklist();
 document.querySelectorAll("[data-verdict]").forEach(el => el.replaceWith(verdictButtons(el.dataset.verdict)));
 document.querySelectorAll("[data-info]").forEach(inp => {
   inp.value = state.info[inp.dataset.info] || "";
   inp.oninput = () => { state.info[inp.dataset.info] = inp.value; save(); };
 });
+
+// ---------- Model seçimi ----------
+const modelSel = document.getElementById("modelSel");
+modelSel.innerHTML = Object.entries(MODELS).map(([k, m]) => `<option value="${k}">${m.name}</option>`).join("");
+function renderModel() {
+  const m = MODELS[MODEL];
+  modelSel.value = MODEL;
+  document.getElementById("h1model").textContent = m.name;
+  document.getElementById("modelInfo").innerHTML =
+    `<p><b>Ekran:</b> ${m.display}<br><b>Portlar:</b> ${m.ports}<br><b>Adaptör:</b> ${m.charger}<br>` +
+    `<b>Batarya:</b> ${m.wh} Wh &nbsp; <b>Fan:</b> ${m.fan ? "var" : "yok (sessiz)"} &nbsp; <b>Model no:</b> ${m.a} &nbsp; <b>Kimlik:</b> ${m.ids.join(" / ")}</p>`;
+}
+modelSel.onchange = () => {
+  MODEL = modelSel.value; state.info.model = MODEL; save();
+  SECTIONS = buildSections(MODELS[MODEL]); ALL_ITEMS = SECTIONS.flatMap(s => s.items);
+  renderModel(); renderChecklist(); renderKb();
+};
+renderModel();
 
 // ---------- Batarya ----------
 const cyc = document.getElementById("cyc"), cap = document.getElementById("cap");
@@ -482,12 +543,30 @@ fs.onclick = () => fsStep(1);
   if (!document.fullscreenElement && !document.webkitFullscreenElement) fs.classList.remove("show");
 }));
 
+// ---------- Yenileme hızı ----------
+document.getElementById("hzBtn").onclick = () => {
+  const out = document.getElementById("hzOut"), times = [];
+  out.textContent = "Ölçülüyor… (2 sn, fareyi oynatma)";
+  const tick = t => {
+    times.push(t);
+    if (t - times[0] < 2000) return requestAnimationFrame(tick);
+    const d = times.slice(1).map((v, i) => v - times[i]).sort((a, b) => a - b);
+    const hz = Math.round(1000 / d[Math.floor(d.length / 2)]);
+    const want = MODELS[MODEL].hz;
+    out.innerHTML = `Ölçülen: <b>${hz} Hz</b> (bu model: ${want} Hz). ` + (want === 120
+      ? (hz >= 110 ? '<span class="pill ok">ProMotion çalışıyor</span>'
+        : '<span class="pill warn">60 Hz ölçüldü: Safari 60 Hz ile sınırlar ve Düşük Güç Modu da kısar. Chrome\'da dene, Ayarlar → Ekranlar → Yenileme Hızı: ProMotion olmalı.</span>')
+      : (hz >= 55 ? '<span class="pill ok">Normal</span>' : '<span class="pill warn">Beklenenden düşük</span>'));
+  };
+  requestAnimationFrame(tick);
+};
+
 // ---------- Klavye ----------
 const ROW_F = [["Escape","esc",1.3],...Array.from({length:12},(_, i)=>[`F${i+1}`,`F${i+1}`]),["TouchID","Touch ID",1,1]];
 const LETTERS = s => s.split("").map(c => [/\d/.test(c) ? `Digit${c}` : `Key${c}`, c]);
 function layout(iso) {
   return [
-    ROW_F,
+    MODELS[MODEL].touchbar ? [["Escape","esc",1.3],["TouchID","Touch ID",1,1]] : ROW_F,
     [[iso ? "IntlBackslash" : "Backquote", iso ? "§ \"" : "`"], ...LETTERS("1234567890"), ["Minus","-"], ["Equal","="], ["Backspace","⌫",1.5]],
     [["Tab","⇥",1.5], ...LETTERS("QWERTYUIOP"), ["BracketLeft","["], ["BracketRight","]"], ...(iso ? [["Enter","↩",1.3]] : [["Backslash","\\",1.3]])],
     [["CapsLock","⇪",1.8], ...LETTERS("ASDFGHJKL"), ["Semicolon",";"], ["Quote","'"], ...(iso ? [["Backslash","\\"]] : [["Enter","↩",2]])],
@@ -668,7 +747,7 @@ function renderReport() {
   const by = s => ALL_ITEMS.filter(([id]) => state.r[id]?.s === s);
   const fails = by("fail"), oks = by("ok"), skips = by("skip");
   const todo = ALL_ITEMS.filter(([id]) => !state.r[id]?.s);
-  const critical = ["kilit-activation", "kilit-mdm", "kilit-findmy", "kilit-firmware", "kasa-sisme"];
+  const critical = ["kilit-activation", "kilit-mdm", "kilit-findmy", "kilit-recovery", "kasa-sisme"];
   const critFail = fails.filter(([id]) => critical.includes(id));
   let html = `<p><span class="pill ok">${oks.length} geçti</span> <span class="pill bad">${fails.length} kaldı</span>
     <span class="pill">${skips.length} atlandı</span> <span class="pill warn">${todo.length} yapılmadı</span></p>`;
