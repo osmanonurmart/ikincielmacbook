@@ -39,6 +39,9 @@ section.tab.active { display: block; }
 .item:first-of-type { border-top: 0; }
 .item .t { font-weight: 600; }
 .item .d { color: var(--muted); font-size: 13px; }
+ol.d { margin: 4px 0 0; padding-left: 20px; }
+ol.d li { margin: 2px 0; }
+.item > div { min-width: 0; }
 .item input.note { grid-column: 1 / -1; display: none; }
 .item.fail input.note, .item.has-note input.note { display: block; }
 .verdict { display: flex; gap: 4px; align-items: start; }
@@ -109,6 +112,30 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <!-- KONTROL LİSTESİ -->
 <section class="tab" id="tab-liste" data-title="Kontrol Listesi">
   <div class="card">
+    <h2>Mac'i ilk kez kullanıyorsan önce bunu oku</h2>
+    <h3>Önerilen sıra</h3>
+    <ol>
+      <li>Satıcı Mac'i açsın ve kendi şifresiyle giriş yapsın. Testleri onun hesabı açıkken yapacaksın.</li>
+      <li>Mac'te <b>Safari</b>'yi aç (ekranın altındaki simge şeridinde pusula simgesi) ve adres çubuğuna bu sayfanın adresini yaz.</li>
+      <li>Önce <b>Sistem & Batarya</b> sekmesindeki Terminal kontrolünü çalıştır. Kilitleri ve bataryayı otomatik kontrol eder.</li>
+      <li>Sonra bu listeyi yukarıdan aşağıya doğru git. Her maddenin altında nereye tıklayacağın yazıyor.</li>
+      <li>Diğer sekmelerdeki (Ekran, Klavye, Trackpad, Ses, Kamera) testleri yap.</li>
+      <li>En son satıcının önünde cihazı sıfırlat (Kilitler bölümündeki son madde) ve <b>Rapor</b> sekmesine bak.</li>
+    </ol>
+    <h3>Mac'te temel şeyler</h3>
+    <ul>
+      <li><b>Elma menüsü ()</b>: ekranın sol üst köşesindeki elma. Bu Mac Hakkında, Sistem Ayarları, Kapat, Yeniden Başlat buradadır.</li>
+      <li><b>Sistem Ayarları</b>: Windows'taki Denetim Masası gibidir. Elma menüsünden açılır. Solda bölümler listesi var, tıklayınca sağda ayarlar açılır.</li>
+      <li><b>Dock</b>: ekranın altındaki uygulama simgeleri şeridi. Gülen yüz = Finder (dosyalar), pusula = Safari (internet).</li>
+      <li><b>Arama (Spotlight)</b>: <b>⌘ Command + Boşluk</b> tuşlarına birlikte bas, uygulamanın adını yaz, Enter'a bas. Her uygulamayı böyle açabilirsin.</li>
+      <li><b>Kontrol Merkezi</b>: sağ üst köşede, saatin yanındaki iki küçük düğme gibi simge. Wi-Fi, ses, parlaklık buradadır.</li>
+      <li><b>Tuşlar</b>: <b>⌘ Command</b> = Windows'taki Ctrl (boşluk tuşunun iki yanında). <b>⌥ Option</b> = Alt. <b>⌃ Control</b> ayrı bir tuştur. <b>fn / 🌐</b> sol alt köşededir.</li>
+      <li><b>Kopyala / yapıştır</b>: ⌘ Command + C / ⌘ Command + V.</li>
+      <li><b>Sağ tık</b>: trackpad'e iki parmakla birlikte bas. <b>Kaydırma</b>: iki parmağı trackpad üzerinde yukarı aşağı kaydır.</li>
+      <li><b>Pencere kapatma</b>: pencerenin sol üstündeki kırmızı nokta. <b>Tam ekrandan çıkma</b>: Esc tuşu.</li>
+    </ul>
+  </div>
+  <div class="card">
     <h2>Model: <span id="h1model"></span></h2>
     <select id="modelSel" style="max-width:420px;font-size:15px"></select>
     <div id="modelInfo" class="muted"></div>
@@ -129,33 +156,63 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <!-- SİSTEM / BATARYA -->
 <section class="tab" id="tab-sistem" data-title="Sistem & Batarya">
   <div class="card">
-    <h2>Otomatik sistem kontrolü (Terminal)</h2>
-    <p>Test ettiğin MacBook'ta Terminal'i aç (Cmd+Boşluk → "Terminal") ve repodaki betiği çalıştır:</p>
-    <pre>bash macbook-kontrol.sh</pre>
-    <p class="muted">Betik şunları okur: model, seri no, çip, RAM, SSD, batarya döngü sayısı ve sağlığı, Activation Lock, Find My (Mac'imi Bul),
-      MDM/kurumsal kayıt, FileVault, SIP, SSD SMART durumu, kernel panic geçmişi, son kapanma nedenleri.
-      CPU stres testi için: <code>bash macbook-kontrol.sh --stres 5</code> (5 dakika).</p>
+    <h2>1. Otomatik kontrol (Terminal)</h2>
+    <p>Terminal, Mac'e yazıyla komut verdiğin bir penceredir. Bu komut cihazda hiçbir şeyi değiştirmez, sadece bilgileri okuyup ekrana yazar.</p>
+    <ol>
+      <li>Mac internete bağlı olsun (sağ üstteki Wi-Fi simgesinden).</li>
+      <li>Klavyede <b>⌘ Command + Boşluk</b> tuşlarına birlikte bas. Ekranın ortasında arama kutusu açılır.</li>
+      <li><b>Terminal</b> yaz ve <b>Enter</b>'a bas. Yazı yazılabilen bir pencere açılır.</li>
+      <li>Aşağıdaki <b>Komutu kopyala</b> düğmesine bas.</li>
+      <li>Terminal penceresine tıkla, <b>⌘ Command + V</b> ile yapıştır ve <b>Enter</b>'a bas.</li>
+      <li>10-30 saniye bekle. Sonuçlar renkli olarak yazılır: <span class="pill ok">✔ yeşil</span> sorun yok, <span class="pill warn">! sarı</span> dikkat, <span class="pill bad">✘ kırmızı</span> sorun.</li>
+      <li>En altta <b>ÖZET</b> bölümü var. Oradaki maddeleri kontrol listesine işaretle.</li>
+    </ol>
+    <pre id="cmd1">curl -sL https://raw.githubusercontent.com/osmanonurmart/ikincielmacbook/main/macbook-kontrol.sh | bash</pre>
+    <button class="btn" data-copy="cmd1">Komutu kopyala</button>
+    <p class="muted">Kontrol ettikleri: model ve M2 doğrulaması, seri no, RAM, SSD sağlığı, pil döngü sayısı ve kapasitesi, Etkinleştirme Kilidi, Mac'imi Bul,
+      şirket yönetimi (MDM), çökme geçmişi.</p>
+    <h3>Stres testi (5 dakika)</h3>
+    <p>İşlemciyi 5 dakika tam güçte çalıştırır. Cihaz kapanırsa veya donarsa sorun var demektir. Aynı şekilde Terminal'e yapıştır, Enter'a bas, bitmesini bekle.
+      Erken durdurmak için <b>⌃ Control + C</b>.</p>
+    <pre id="cmd2">curl -sL https://raw.githubusercontent.com/osmanonurmart/ikincielmacbook/main/macbook-kontrol.sh | bash -s -- --stres 5</pre>
+    <button class="btn" data-copy="cmd2">Stres komutunu kopyala</button>
   </div>
   <div class="card">
-    <h2>Batarya değerlendirme</h2>
-    <p class="muted">Elle bakmak için: Option tuşuna basılıyken Apple menüsü → Sistem Bilgisi → Donanım → Güç. Ya da Ayarlar → Pil → Pil Sağlığı (ⓘ).</p>
+    <h2>2. Pil (batarya) değerlendirme</h2>
+    <p>Değerleri Terminal çıktısından veya elle al:</p>
+    <ul>
+      <li><b>Döngü sayısı</b>: klavyede <b>⌥ Option</b> tuşunu basılı tut, sol üstteki elmaya () tıkla → <b>Sistem Bilgileri</b>. Solda <b>Donanım</b> altında <b>Güç</b>'e tıkla → sağda <b>Döngü Sayısı</b>.</li>
+      <li><b>Maksimum kapasite</b>: elma () → <b>Sistem Ayarları</b> → solda <b>Pil</b> → <b>Pil Sağlığı</b> yanındaki (i) simgesi.</li>
+    </ul>
     <div class="grid2">
-      <label class="f">Döngü sayısı (Cycle Count)<input type="number" id="cyc" min="0"></label>
+      <label class="f">Döngü sayısı<input type="number" id="cyc" min="0"></label>
       <label class="f">Maksimum kapasite (%)<input type="number" id="cap" min="0" max="120"></label>
     </div>
     <p id="batVerdict"></p>
-    <p class="muted">M2 bataryalar 1000 döngü için tasarlanmıştır. %80 altı = "Servis Önerilir".
-      Batarya değişimi pahalıdır, fiyattan düşmek için kullan.</p>
+    <p class="muted">M2 piller 1000 döngü için tasarlanmıştır. %80'in altında pil 'Servis Önerilir' durumuna geçer.
+      Pil değişimi pahalıdır, sorun varsa fiyattan düşmek için kullan.</p>
   </div>
   <div class="card">
-    <h2>Apple Diagnostics (donanım teşhisi)</h2>
-    <p>Adaptörü tak, Mac'i kapat → güç (Touch ID) tuşuna "Başlangıç seçenekleri yükleniyor" yazana kadar basılı tut → Cmd+D.</p>
-    <p class="muted">Sonuçta referans kodu çıkar (ör. ADP000 = sorun yok). Kodu kontrol listesindeki nota yaz.</p>
+    <h2>3. Apple Diagnostics (donanım testi)</h2>
+    <p>Apple'ın kendi donanım testidir, 2-5 dakika sürer.</p>
+    <ol>
+      <li>Şarj kablosunu tak.</li>
+      <li>Sol üstteki elma () → <b>Kapat</b> → onayla. Ekran tamamen kararsın, 10 saniye bekle.</li>
+      <li>Klavyenin sağ üst köşesindeki <b>Touch ID / açma tuşuna</b> basılı tut. Bırakma.</li>
+      <li>Ekranda <b>"Başlangıç seçenekleri yükleniyor"</b> yazısı çıkınca tuşu bırak.</li>
+      <li>Disk ve <b>Seçenekler</b> simgeleri görünür. Bu ekranda <b>⌘ Command + D</b> tuşlarına birlikte bas.</li>
+      <li>Dil seçimi veya internet isterse izle. Test kendiliğinden başlar ve ilerleme çubuğu dolar.</li>
+      <li>Sonunda <b>"Herhangi bir sorun bulunamadı"</b> ve <b>ADP000</b> kodu çıkmalı. Başka bir kod çıkarsa (ör. PPT004 = pil, NDC/NDD = donanım) kodu not al.</li>
+      <li>Çıkmak için <b>Yeniden Başlat</b>'a tıkla.</li>
+    </ol>
   </div>
   <div class="card">
-    <h2>Seri no doğrulama</h2>
-    <p>Seri numarasını <b>checkcoverage.apple.com</b> adresinde sorgula: model, satın alma tarihi geçerliliği ve garanti/AppleCare görünür.
-      Kutu, fatura ve cihaz altındaki seri no ile Sistem Bilgisi'ndeki seri no aynı olmalı.</p>
+    <h2>4. Seri no doğrulama</h2>
+    <ol>
+      <li>Elma () → <b>Bu Mac Hakkında</b> → <b>Seri numarası</b> satırını not al.</li>
+      <li>Telefonundan <b>checkcoverage.apple.com</b> adresine gir, seri numarasını ve doğrulama kodunu yaz.</li>
+      <li>Çıkan model ilandakiyle, seri no ise kutu ve faturadakiyle aynı olmalı.</li>
+    </ol>
   </div>
 </section>
 
@@ -163,7 +220,13 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <section class="tab" id="tab-ekran" data-title="Ekran">
   <div class="card">
     <h2>Ekran testleri</h2>
-    <p>Parlaklığı en yükseğe al. Tam ekranda tıkla / boşluk / → ile sonraki, ← ile önceki ekran, Esc ile çık.</p>
+    <ol>
+      <li>Parlaklığı en yükseğe al: klavyenin en üst sırasındaki güneş simgeli <b>F2</b> tuşuna birkaç kez bas.</li>
+      <li>Aşağıdaki mavi düğmelerden birine bas. Ekranın tamamı tek renk olur.</li>
+      <li>Ekrana 20-30 cm mesafeden, köşelerden başlayarak satır satır bak.</li>
+      <li>Sonraki renge geçmek için trackpad'e tıkla (veya → tuşu). Önceki renk için ← tuşu.</li>
+      <li>Renkler bitince test kendiliğinden kapanır. Erken çıkmak için sol üstteki <b>Esc</b> tuşu.</li>
+    </ol>
     <button class="btn" data-fs="colors">Ölü / takılı piksel (düz renkler)</button>
     <button class="btn" data-fs="black">Işık sızması (siyah)</button>
     <button class="btn" data-fs="gradients">Geçiş / bantlanma</button>
@@ -188,7 +251,13 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <section class="tab" id="tab-klavye" data-title="Klavye">
   <div class="card">
     <h2>Klavye testi</h2>
-    <div class="alert">Cmd+W / Cmd+Q sekmeyi kapatır — Cmd tuşlarına <b>tek başına</b> bas. F1–F12 için <b>fn</b> (🌐) basılı tut. Pro 13" modelde F satırı yerine Touch Bar vardır, sadece esc görünür.</div>
+    <ol>
+      <li>Klavyedeki her tuşa sırayla bir kez bas. Basılan tuş aşağıdaki şekilde yeşile döner.</li>
+      <li><b>F1-F12</b> tuşları (en üst sıra) normalde parlaklık/ses gibi işler yapar. Sayfanın algılaması için sol alt köşedeki <b>fn / 🌐</b> tuşunu basılı tutarak bas.</li>
+      <li>Tuşa bastığında hiçbir şey olmuyorsa veya kırmızı oluyorsa o tuş arızalıdır.</li>
+      <li>Bitince aşağıdaki kutuya birkaç cümle yazarak tuşların takılmadığını kontrol et.</li>
+    </ol>
+    <div class="alert">⌘ Command + W veya ⌘ Command + Q sayfayı kapatır. ⌘ Command tuşlarına <b>tek başına</b> bas, başka tuşla birlikte basma. Pro 13" modelde F tuşları yerine Touch Bar vardır, sadece esc görünür.</div>
     <p>Düzen:
       <button class="btn sec" id="kbIso">ISO (Türkçe Q / Avrupa)</button>
       <button class="btn sec" id="kbAnsi">ANSI (ABD)</button>
@@ -209,7 +278,16 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <section class="tab" id="tab-trackpad" data-title="Trackpad">
   <div class="card">
     <h2>Trackpad testi</h2>
-    <p>Alanın içinde çiz, tıkla, sağ tıkla (iki parmak), iki parmakla kaydır, kıstır, sıkıca bas (Force Click).</p>
+    <p>Trackpad, klavyenin altındaki büyük cam yüzeydir. Aşağıdaki gri alanın üzerinde şunları yap. Yaptığın her hareket yukarıda yeşile döner:</p>
+    <ul>
+      <li><b>Sol tık</b>: tek parmakla trackpad'e bastır, "tık" hissi gelmeli.</li>
+      <li><b>Sürükle / çiz</b>: tek parmakla bastır, bırakmadan parmağını kaydır. Gri alanda çizgi çıkar.</li>
+      <li><b>Çift tık</b>: hızlıca iki kez tıkla.</li>
+      <li><b>Sağ tık</b>: iki parmağı yan yana koyup birlikte bastır.</li>
+      <li><b>Dikey / yatay kaydırma</b>: iki parmağı trackpad'e değdir, bastırmadan yukarı-aşağı, sonra sağa-sola kaydır.</li>
+      <li><b>Kıstırma (zoom)</b>: başparmak ve işaret parmağını trackpad üzerinde birbirine yaklaştırıp uzaklaştır.</li>
+      <li><b>Force Click</b>: tıkla, sonra bırakmadan biraz daha sert bastır. İkinci, daha derin bir "tık" hissi gelmeli (sadece Safari'de algılanır).</li>
+    </ul>
     <div class="checks" id="padChecks"></div>
     <canvas id="pad"></canvas>
     <p><button class="btn sec" id="padClear">Temizle</button></p>
@@ -223,7 +301,12 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <section class="tab" id="tab-ses" data-title="Hoparlör & Mikrofon">
   <div class="card">
     <h2>Hoparlör</h2>
-    <p>Sesi önce yarıya, sonra en yükseğe al. Kulağını sırayla her hoparlöre yaklaştır.</p>
+    <ol>
+      <li>Ses açma tuşu klavyenin en üst sırasındaki hoparlör simgeli <b>F12</b>'dir (F11 kısar, F10 sessize alır). Sesi önce yarıya getir.</li>
+      <li><b>Sol</b> ve <b>Sağ</b> düğmelerine bas. Ses sırasıyla sadece sol ve sadece sağ taraftan gelmeli. Hoparlörler klavyenin iki yanındadır.</li>
+      <li><b>Bas taraması</b>'na bas ve sesi en yükseğe al. Kalın sesten inceye doğru bir ton çalar. Çatırtı, vızıltı, kasada titreşim olmamalı.</li>
+      <li>Kablolu kulaklık takıp <b>İkisi</b>'ne basarak kulaklık girişini de dene.</li>
+    </ol>
     <button class="btn" data-tone="left">Sol</button>
     <button class="btn" data-tone="right">Sağ</button>
     <button class="btn" data-tone="both">İkisi</button>
@@ -235,6 +318,11 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
   </div>
   <div class="card">
     <h2>Mikrofon</h2>
+    <ol>
+      <li><b>Mikrofonu başlat</b>'a bas. Tarayıcı izin isterse <b>İzin Ver</b>'e tıkla.</li>
+      <li>Konuş: yeşil çubuk sesine göre hareket etmeli.</li>
+      <li><b>5 sn kaydet ve dinlet</b>'e bas, konuş. Kayıt bitince kendi sesini duymalısın, cızırtısız olmalı.</li>
+    </ol>
     <button class="btn" id="micStart">Mikrofonu başlat</button>
     <button class="btn" id="micRec" disabled>5 sn kaydet ve dinlet</button>
     <button class="btn sec" id="micStop" disabled>Durdur</button>
@@ -249,6 +337,11 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <section class="tab" id="tab-kamera" data-title="Kamera">
   <div class="card">
     <h2>Kamera</h2>
+    <ol>
+      <li><b>Kamerayı aç</b>'a bas. Tarayıcı izin isterse <b>İzin Ver</b>'e tıkla.</li>
+      <li>Kamera ekranın üst ortasındadır. Kendini görmelisin ve kameranın yanında küçük yeşil ışık yanmalı.</li>
+      <li>Görüntüde leke, bulanıklık, renk bozukluğu olmamalı.</li>
+    </ol>
     <button class="btn" id="camStart">Kamerayı aç</button>
     <button class="btn sec" id="camStop">Kapat</button>
     <p class="muted" id="camInfo">Yeşil ışık yanmalı, görüntü net ve lekesiz olmalı. Çalışmazsa Photo Booth ile dene.</p>
@@ -306,69 +399,187 @@ const MODELS = {
 };
 
 // ---------- Kontrol listesi verisi (seçili modele göre) ----------
+// d: tek cümle veya adım adım liste (dizi)
+const ABOUT = "Ekranın sol üst köşesindeki elma simgesine () tıkla → <b>Bu Mac Hakkında</b>";
+const SETTINGS = "Ekranın sol üst köşesindeki elma simgesine () tıkla → <b>Sistem Ayarları</b>";
+const SPOT = name => `Klavyede <b>⌘ Command + Boşluk</b> tuşlarına birlikte bas (ekranın ortasında arama kutusu açılır) → <b>${name}</b> yaz → <b>Enter</b>`;
 function buildSections(m) {
   const air = !m.fan;
   return [
   { title: "Belgeler ve sahiplik", items: [
-    ["belge-fatura", "Fatura / kutu var", "Faturadaki ve kutudaki seri no cihazla aynı mı? Türkiye'de faturalı ürün 2 yıl yasal garantilidir, fatura tarihine bak."],
-    ["belge-seri", "Seri no doğrulandı", "checkcoverage.apple.com'da model ve tarih ilanla tutuyor mu?"],
-    ["belge-model", `Model gerçekten ${m.name}`, `Bu Mac Hakkında'da çip "Apple M2${m.pro ? " Pro / M2 Max" : ""}" yazmalı. Alt kasadaki model no: ${m.a}. Betik model kimliğini (${m.ids.join(" / ")}) kontrol eder.`],
-    ["belge-ram", "RAM / SSD ilanla aynı", m.pro ? "Bu Mac Hakkında → Bellek ve Depolama." : "8 GB / 256 GB temel modelde SSD tek çipli ve daha yavaştır. Arıza değil ama fiyata yansımalı. 16 GB+ tercih sebebi."],
+    ["belge-fatura", "Fatura / kutu var", [
+      "Satıcıdan faturayı ve kutuyu iste.",
+      "Kutunun arkasındaki etikette ve faturada <b>seri no</b> yazar.",
+      `Cihazdaki seri no: ${ABOUT} → açılan pencerede <b>Seri numarası</b> satırı.`,
+      "Üçü birebir aynı olmalı. Türkiye'de faturalı ürün 2 yıl yasal garantilidir, fatura tarihine bak.",
+    ]],
+    ["belge-seri", "Seri no Apple sitesinde doğrulandı", [
+      "Kendi telefonundan <b>checkcoverage.apple.com</b> adresine gir.",
+      "Seri numarasını ve resimdeki doğrulama kodunu yaz → Devam.",
+      `Çıkan model adı "${m.name.replace(/ \(.*/, "")}" ile aynı olmalı. Garanti bitiş tarihi de burada görünür.`,
+    ]],
+    ["belge-model", `Model gerçekten ${m.name}`, [
+      `${ABOUT}.`,
+      `Açılan pencerede en üstte model adı, altında <b>Çip</b> satırı var. Çip satırında <b>Apple M2${m.pro ? " Pro veya Apple M2 Max" : ""}</b> yazmalı.`,
+      `Cihazı ters çevir: alt kasada küçük yazılarda <b>Model ${m.a}</b> yazmalı.`,
+    ]],
+    ["belge-ram", "RAM / SSD ilanla aynı", [
+      `${ABOUT} → <b>Bellek</b> satırı RAM'dir (8 GB, 16 GB, 24 GB…).`,
+      `Depolama (SSD): ${SETTINGS} → sol listede <b>Genel</b> → <b>Depolama</b>. Toplam boyut yazar (256 GB, 512 GB…).`,
+      ...(m.pro ? [] : ["Not: 256 GB'lık temel modelin SSD'si daha yavaştır. Arıza değil ama fiyatı düşürür."]),
+    ]],
   ]},
   { title: "Kilitler (en kritik bölüm)", items: [
-    ["kilit-activation", "Activation Lock kapalı", "Betik çıktısında 'Activation Lock: kapalı' olmalı. Açıksa ASLA alma."],
-    ["kilit-findmy", "Mac'imi Bul kapalı, Apple ID çıkışı yapılmış", "Ayarlar → [isim] → Çıkış Yap. Satıcının önünde yapılmalı."],
-    ["kilit-mdm", "MDM / kurumsal kayıt yok", "Betikte 'Enrolled via DEP: No' ve 'MDM enrollment: No' olmalı. Şirket cihazı ise sıfırlamadan sonra kilitlenir."],
-    ["kilit-recovery", "Kurtarma modu şifresiz açılıyor", "Mac'i kapat, güç tuşuna basılı tut → 'Seçenekler'e tıkla. Recovery Lock şifresi sormamalı."],
-    ["kilit-reset", "Satıcının önünde sıfırlandı", "Ayarlar → Genel → Aktar veya Sıfırla → Tüm İçerikleri ve Ayarları Sil. Kurulumda internete bağlanınca 'Uzaktan Yönetim' veya kilit ekranı çıkmamalı."],
+    ["kilit-findmy", "Mac'imi Bul kapalı", [
+      `${SETTINGS}.`,
+      "Sol listenin en üstünde satıcının adı (Apple Hesabı) yazar → tıkla → <b>iCloud</b> → <b>Mac'imi Bul</b> (bazen 'Tümünü Gör' altında).",
+      "<b>Kapalı</b> olmalı. Açıksa satıcı kendi şifresiyle kapatmalı.",
+      "Terminal betiği de bunu otomatik kontrol eder.",
+    ]],
+    ["kilit-mdm", "Şirket yönetimi (MDM) yok", [
+      `${SETTINGS} → sol listede <b>Genel</b> → <b>Aygıt Yönetimi</b> (eski sürümlerde: Gizlilik ve Güvenlik → Profiller).`,
+      "Burada hiçbir profil olmamalı. Bölüm hiç görünmüyorsa da sorun yok.",
+      "Terminal betiğinde 'MDM / kurumsal kayıt yok' yazmalı. Şirket cihazıysa sıfırlayınca kilitlenir, alma.",
+    ]],
+    ["kilit-reset", "Satıcının önünde sıfırlandı (en son yap)", [
+      "Bunu bütün testler bittikten sonra, parayı vermeden önce yap.",
+      `${SETTINGS} → <b>Genel</b> → <b>Aktar veya Sıfırla</b> → <b>Tüm İçerikleri ve Ayarları Sil</b>.`,
+      "Satıcı Mac şifresini ve Apple hesabı şifresini girer. Apple hesabı şifresini bilmiyorsa cihaz onun değildir.",
+      "Mac yeniden başlar ve 'Merhaba' kurulum ekranı gelir. Dil seç → Wi-Fi'a bağlan.",
+      "İnternete bağlanınca <b>'Etkinleştirme Kilidi'</b> veya <b>'Uzaktan Yönetim'</b> ekranı çıkmamalı. Çıkarsa alma.",
+    ]],
+    ["kilit-activation", "Etkinleştirme Kilidi (Activation Lock) kapalı", [
+      "Terminal betiği çıktısında yeşil <b>'Activation Lock: kapalı'</b> yazmalı.",
+      "Elle bakmak için: klavyede <b>⌥ Option</b> tuşunu basılı tutarak sol üstteki elmaya tıkla → <b>Sistem Bilgileri</b> → solda <b>Donanım</b> → sağda <b>Etkinleştirme Kilidi Durumu: Etkin değil</b>.",
+      "Açıksa ASLA alma: başkası cihazı uzaktan kilitleyebilir.",
+    ]],
   ]},
   { title: "Dış görünüş ve kasa", items: [
-    ["kasa-ezik", "Kasada ezik / eğrilik yok", "Düz masada sallanıyor mu? Köşelerde darbe izi var mı?" + (air ? " Gece Yarısı (Midnight) renkte kenar ve köşe boya aşınmasına özellikle bak." : "")],
-    ...(air ? [["kasa-catlak", "Ekranda çatlak yok", "M2 Air'de ince ekran, kapak arasına kalem/kulaklık girince köşeden çatlar. Ekranı beyaz yapıp köşelere ve alt kenara bak."]] : []),
-    ["kasa-vida", "Alt kapak vidaları sağlam", "Yalanmış / çizik vida başları cihazın açıldığını gösterir. Sor."],
-    ["kasa-sivi", "Sıvı teması izi yok", "Port içlerinde yeşil/beyaz korozyon, klavye altında leke, yapışkan tuşlar."],
-    ["kasa-sisme", "Batarya şişmesi yok", "Trackpad yükselmiş, alt kasa bombeli, kapak tam kapanmıyor = şişik batarya. Alma."],
-    ["kasa-mentese", "Menteşe sağlam", "Ekran her açıda durmalı, tek elle açılabilmeli ama kendi kendine düşmemeli."],
+    ["kasa-ezik", "Kasada ezik / eğrilik yok", [
+      "Kapağı kapat, cihazı düz bir masaya koy. Köşelerine hafifçe bas: sallanmamalı.",
+      "Dört köşeye ve kenarlara bak: ezik, çatlak, derin çizik olmamalı." + (air ? " Gece Yarısı (koyu lacivert) renkte kenarlarda boya aşınması sık olur." : ""),
+    ]],
+    ...(air ? [["kasa-catlak", "Ekranda çatlak yok", [
+      "M2 Air'in ekranı ince: kapak arasına kulaklık, kalem girince köşeden çatlar.",
+      "Ekran sekmesindeki beyaz ekran testinde köşelere ve alt kenara yakından bak: ince çizgi veya renkli leke olmamalı.",
+    ]]] : []),
+    ["kasa-vida", "Alt kapak vidaları sağlam", [
+      "Cihazı ters çevir. Köşelerdeki ve kenarlardaki küçük vidalara bak.",
+      "Vida başları çizik, yalanmış veya farklı renkteyse cihaz açılmış/tamir görmüş demektir. Satıcıya sor.",
+    ]],
+    ["kasa-sivi", "Sıvı teması izi yok", [
+      "Telefonunun fenerini aç ve şarj girişlerinin (yan taraftaki oval delikler) içine bak.",
+      "Yeşil, beyaz pas veya kir olmamalı. Klavyede yapışan, zor basılan tuş olmamalı.",
+    ]],
+    ["kasa-sisme", "Batarya şişmesi yok", [
+      "Klavyenin altındaki büyük cam yüzey (trackpad) kasayla aynı hizada olmalı, yukarı kabarık olmamalı.",
+      "Cihazı ters çevir, alt kasa düz olmalı, ortası şişkin olmamalı.",
+      "Kapak kapalıyken ekranla klavye arasında eşit boşluk olmalı. Şişme varsa ALMA, tehlikelidir.",
+    ]],
+    ["kasa-mentese", "Menteşe sağlam", [
+      "Ekranı tek parmakla aç. Yarı açık bırak: kendi kendine düşmemeli veya kapanmamalı.",
+      "Ekranı hafifçe sağa sola it: boşluk / tıkırtı olmamalı.",
+    ]],
   ]},
   { title: "Ekran", items: [
-    ["ekran-piksel", "Ölü piksel / leke / ışık sızması yok", "Ekran sekmesindeki testleri yap."],
-    ["ekran-iz", "Ekranda klavye izi / kaplama lekesi yok", "Ekranı kapat, ışığa eğik tutarak bak. Klavye tuşlarının izi ekrana çıkmış olabilir."],
-    ...(m.hz === 120 ? [["ekran-promotion", "120 Hz ProMotion çalışıyor", "Ekran sekmesinde yenileme hızını ölç (Chrome'da). Ayarlar → Ekranlar → Yenileme Hızı: ProMotion."]] : []),
-    ...(m.pro ? [["ekran-xdr", "XDR parlaklık / HDR düzgün", "Parlaklığı tam aç. Siyah ekranda parlak nesne etrafında hafif hale (blooming) mini-LED'de normaldir, bölge bölge renk farkı değildir."]] : []),
-    ["ekran-parlaklik", "Parlaklık ve True Tone çalışıyor", "Parlaklık tuşları (F1/F2) ve Ayarlar → Ekranlar → True Tone."],
-    ["ekran-uyku", "Kapak kapanınca uyuyor, açınca uyanıyor", ""],
+    ["ekran-piksel", "Ölü piksel / leke / ışık sızması yok", "Bu sayfada üstteki <b>Ekran</b> sekmesine geç ve oradaki testleri yap."],
+    ["ekran-iz", "Ekranda klavye izi / kaplama lekesi yok", [
+      "Ekran kapalıyken (siyahken) ışığa doğru eğik tut.",
+      "Klavye tuşları şeklinde lekeler veya silinmiş gibi bölgeler olmamalı.",
+    ]],
+    ...(m.hz === 120 ? [["ekran-promotion", "120 Hz ProMotion çalışıyor", [
+      `${SETTINGS} → <b>Ekranlar</b> → <b>Yenileme Hızı</b>: ProMotion seçili olmalı.`,
+      "Bu sayfayı Chrome'da aç → Ekran sekmesi → 'Yenileme hızını ölç'. 120 Hz civarı çıkmalı.",
+    ]]] : []),
+    ...(m.pro ? [["ekran-xdr", "XDR ekran düzgün", [
+      "Parlaklığı en yükseğe al. Ekran sekmesinde siyah testinde ekranın her yeri aynı siyah olmalı.",
+      "Parlak nesnenin etrafında hafif hale olması bu ekranda normaldir.",
+    ]]] : []),
+    ["ekran-parlaklik", "Parlaklık ve True Tone çalışıyor", [
+      "Klavyenin en üst sırasında güneş simgeli <b>F1</b> (kıs) ve <b>F2</b> (aç) tuşlarına bas: ekran parlaklığı değişmeli.",
+      `True Tone: ${SETTINGS} → <b>Ekranlar</b> → True Tone düğmesini kapat/aç. Renk tonu hafifçe değişmeli.`,
+    ]],
+    ["ekran-uyku", "Kapak kapanınca uyuyor, açınca uyanıyor", [
+      "Kapağı tamamen kapat, 10 saniye bekle, aç.",
+      "Ekran birkaç saniye içinde açılmalı ve kilit ekranı gelmeli.",
+    ]],
   ]},
   { title: "Klavye ve giriş", items: [
-    ["klavye-tuslar", "Tüm tuşlar çalışıyor", "Klavye sekmesi."],
-    ["klavye-isik", "Klavye arka ışığı çalışıyor", "Kontrol Merkezi → Klavye Parlaklığı."],
-    ["klavye-touchid", "Touch ID çalışıyor", "Ayarlar → Touch ID ve Parola → Parmak izi ekle, kilit ekranında dene."],
-    ...(m.touchbar ? [["klavye-touchbar", "Touch Bar düzgün", "Her bölgesine dokun; ölü bölge, titreme, soluk piksel olmamalı."]] : []),
-    ["trackpad", "Trackpad ve Force Touch çalışıyor", "Trackpad sekmesi."],
+    ["klavye-tuslar", "Tüm tuşlar çalışıyor", "Bu sayfada üstteki <b>Klavye</b> sekmesine geç, her tuşa sırayla bas. Hepsi yeşile dönmeli."],
+    ["klavye-isik", "Klavye arka ışığı çalışıyor", [
+      "Ekranın sağ üst köşesinde iki küçük düğme gibi görünen simgeye (Kontrol Merkezi) tıkla.",
+      "<b>Klavye Parlaklığı</b> çubuğunu sağa kaydır. Tuşların içi aydınlanmalı, hepsi eşit yanmalı.",
+      `Kontrol Merkezi'nde yoksa: ${SETTINGS} → <b>Klavye</b> → Klavye parlaklığı.`,
+    ]],
+    ["klavye-touchid", "Touch ID (parmak izi) çalışıyor", [
+      "Touch ID, klavyenin sağ üst köşesindeki tuştur (aynı zamanda açma/kapama tuşu).",
+      `${SETTINGS} → <b>Touch ID ve Parola</b> → <b>Parmak İzi Ekle</b>. Satıcı Mac şifresini girer.`,
+      "Ekrandaki yönergeye göre parmağını tuşa birkaç kez koyup kaldır.",
+      "Sonra <b>⌃ Control + ⌘ Command + Q</b> tuşlarına birlikte basıp ekranı kilitle ve parmağınla aç.",
+    ]],
+    ...(m.touchbar ? [["klavye-touchbar", "Touch Bar düzgün", [
+      "Touch Bar, klavyenin üstündeki ince dokunmatik şerittir.",
+      "Her yerine dokun: düğmeler tepki vermeli, ölü bölge, titreme veya soluk alan olmamalı.",
+    ]]] : []),
+    ["trackpad", "Trackpad (izleme dörtgeni) çalışıyor", "Bu sayfada üstteki <b>Trackpad</b> sekmesine geç. Orada her hareketin nasıl yapılacağı yazıyor."],
   ]},
   { title: "Ses, kamera, kablosuz", items: [
-    ["hoparlor", "Hoparlörler temiz (cızırtı yok)", "Hoparlör sekmesi."],
-    ["kulaklik", "Kulaklık çıkışı çalışıyor", ""],
-    ["mikrofon", "Mikrofon çalışıyor", ""],
-    ["kamera", m.pro || !m.touchbar ? "1080p FaceTime HD kamera çalışıyor" : "720p FaceTime HD kamera çalışıyor", ""],
-    ["wifi", "Wi-Fi bağlanıyor ve stabil", "Video aç veya hız testi yap; kopma olmamalı."],
-    ["bluetooth", "Bluetooth çalışıyor", "Telefonunla veya kulaklığınla eşle."],
+    ["hoparlor", "Hoparlörler temiz (cızırtı yok)", "Bu sayfada <b>Hoparlör & Mikrofon</b> sekmesine geç."],
+    ["kulaklik", "Kulaklık girişi çalışıyor", [
+      `Kablolu kulaklığını Mac'in ${m.pro ? "sol" : "sağ"} yanındaki yuvarlak deliğe tak.`,
+      "Hoparlör sekmesinde 'İkisi' düğmesine bas: ses kulaklıktan gelmeli.",
+    ]],
+    ["mikrofon", "Mikrofon çalışıyor", ["Hoparlör & Mikrofon sekmesinde mikrofon testini yap.", `Çalışmazsa: ${SPOT("Sesli Notlar")} → kırmızı yuvarlak düğmeye bas, konuş, durdur, dinle.`]],
+    ["kamera", "Kamera çalışıyor", ["Bu sayfada <b>Kamera</b> sekmesine geç.", `Çalışmazsa: ${SPOT("Photo Booth")}. Kendini görmelisin, kameranın yanındaki yeşil ışık yanmalı.`]],
+    ["wifi", "Wi-Fi bağlanıyor ve stabil", [
+      "Ekranın sağ üst köşesindeki Wi-Fi simgesine (yelpaze şekli) tıkla → telefonunun hotspot'unu veya oradaki ağı seç → şifreyi yaz.",
+      "Safari'de (Dock'taki pusula simgesi) <b>fast.com</b> aç: hız testi çalışmalı, bağlantı kopmamalı.",
+    ]],
+    ["bluetooth", "Bluetooth çalışıyor", [
+      `${SETTINGS} → <b>Bluetooth</b>. Açık olmalı.`,
+      "Telefonunda Bluetooth ayarlarını aç. Telefonun adı Mac'teki listede çıkmalı (ya da kablosuz kulaklığını eşleme moduna al) → <b>Bağlan</b>.",
+    ]],
   ]},
   { title: "Portlar ve şarj", items: [
-    ["port-sarj", "Her porttan şarj oluyor", (m.magsafe ? "MagSafe 3 takınca ışık yanmalı (turuncu = şarj oluyor, yeşil = dolu). " : "") + "Adaptörü her Thunderbolt portuna da tak, şarj simgesi gelmeli."],
-    ["port-veri", "Her Thunderbolt port veri aktarıyor", "USB bellek / telefon tak, Finder'da görünmeli."],
-    ...(m.pro ? [["port-hdmi", "HDMI ve SD kart okuyucu çalışıyor", "Mümkünse monitör/TV'ye bağla, SD kart tak."]] : []),
-    ["port-adaptor", "Adaptör orijinal ve doğru watt", `Bu model için: ${m.charger}. Betik çıktısında watt görünür.`],
+    ["port-sarj", "Her porttan şarj oluyor", [
+      ...(m.magsafe ? ["<b>MagSafe</b>: Mac'in sol yanındaki mıknatıslı ince giriş. Şarj kablosunu yaklaştır, kendisi yapışır. Uçtaki ışık yanmalı: turuncu = şarj oluyor, yeşil = dolu."] : []),
+      "<b>USB-C (Thunderbolt) girişleri</b>: " + m.ports,
+      "USB-C şarj kablosunu bunların <b>her birine</b> ayrı ayrı tak.",
+      "Her seferinde ekranın sağ üstündeki pil simgesinde şimşek işareti çıkmalı.",
+    ]],
+    ["port-veri", "Her USB-C girişi veri aktarıyor", [
+      "USB-C bellek getir (yoksa USB-C kablolu telefon).",
+      "Her USB-C girişine tak. Bellek: Dock'taki gülen yüz simgesine (Finder) tıkla, sol listede belleğin adı görünmeli.",
+      "Telefon: telefon şarj olmaya başlamalı.",
+    ]],
+    ...(m.pro ? [["port-hdmi", "HDMI ve SD kart okuyucu çalışıyor", [
+      "HDMI: sağ yandaki geniş giriş. Mümkünse bir TV/monitöre HDMI kabloyla bağla, görüntü gelmeli.",
+      "SD kart: sağ yandaki ince yuva. Fotoğraf makinesi kartı tak, Finder'da görünmeli.",
+    ]]] : []),
+    ["port-adaptor", "Adaptör orijinal ve doğru watt", [
+      `Bu model için doğru adaptör: <b>${m.charger}</b>.`,
+      "Adaptörün üzerindeki küçük yazılarda watt (W) değeri yazar. Apple logosu olmalı.",
+      "Adaptör takılıyken Terminal betiğini çalıştırırsan watt değerini de gösterir.",
+    ]],
   ]},
   { title: "Batarya ve sağlık", items: [
-    ["bat-dongu", "Döngü sayısı makul", "Sistem & Batarya sekmesinde değerlendir. M2 2022-2023 çıkışlı, çoğu cihaz 100-400 döngü arasında olmalı."],
-    ["bat-kapasite", "Kapasite %80 üstü, 'Servis önerilir' yok", `Tasarım kapasitesi ${m.wh} Wh.`],
-    ["bat-fis", "Fiş çekilince kapanmıyor", "Adaptörü çek, birkaç dakika kullan."],
-    ["saglik-diag", "Apple Diagnostics temiz", "Sistem & Batarya sekmesi."],
-    ["saglik-smart", "SSD SMART 'Verified'", "Betik çıktısı."],
-    ["saglik-panic", "Kernel panic / ani kapanma geçmişi yok", "Betik çıktısı."],
-    ["saglik-stres", "Stres testinde kapanma yok", air
-      ? "bash macbook-kontrol.sh --stres 5 — Air'de fan yok: ısınıp yavaşlaması normal, kapanmamalı."
-      : "bash macbook-kontrol.sh --stres 5 — fan devreye girmeli; tıkırtı, sürtünme sesi olmamalı."],
+    ["bat-dongu", "Döngü (şarj) sayısı makul", [
+      "<b>⌥ Option</b> tuşunu basılı tutarak sol üstteki elmaya tıkla → <b>Sistem Bilgileri</b>.",
+      "Sol listede <b>Donanım</b> altındaki <b>Güç</b>'e tıkla → sağda <b>Döngü Sayısı</b>.",
+      "Bu sayıyı Sistem & Batarya sekmesine yaz. M2 cihazlarda çoğunlukla 100-400 arası olmalı. Terminal betiği de gösterir.",
+    ]],
+    ["bat-kapasite", "Pil sağlığı %80 üstü", [
+      `${SETTINGS} → <b>Pil</b> → <b>Pil Sağlığı</b> yanındaki (i) simgesine tıkla.`,
+      "<b>Maksimum Kapasite</b> yüzdesini Sistem & Batarya sekmesine yaz. 'Servis Önerilir' yazmamalı.",
+    ]],
+    ["bat-fis", "Şarj kablosu çekilince kapanmıyor", "Şarj kablosunu çıkar ve birkaç dakika kullan (video aç). Mac kapanmamalı, pil yüzdesi aniden düşmemeli."],
+    ["saglik-diag", "Apple Diagnostics (donanım testi) temiz", "Sistem & Batarya sekmesinde adım adım anlatılıyor."],
+    ["saglik-smart", "SSD sağlıklı", "Terminal betiğinde yeşil 'SMART durumu: Verified' yazmalı."],
+    ["saglik-panic", "Çökme / ani kapanma geçmişi yok", "Terminal betiğinde 'Kernel panic kaydı yok' yazmalı."],
+    ["saglik-stres", "Yük altında kapanma yok", [
+      "Sistem & Batarya sekmesindeki <b>stres testi</b> komutunu Terminal'de çalıştır (5 dakika sürer).",
+      air ? "Air'de fan yoktur: ısınması ve yavaşlaması normal. Kapanmamalı." : "Fan çalışmalı ve hafif uğultu duyulmalı. Tıkırtı veya sürtünme sesi olmamalı, cihaz kapanmamalı.",
+    ]],
   ]},
   ];
 }
@@ -438,7 +649,8 @@ SECTIONS.forEach(sec => {
   sec.items.forEach(([id, t, d]) => {
     const it = document.createElement("div");
     it.className = "item"; it.dataset.id = id;
-    it.innerHTML = `<div><div class="t">${t}</div>${d ? `<div class="d">${d}</div>` : ""}</div>`;
+    const dd = Array.isArray(d) ? `<ol class="d">${d.map(x => `<li>${x}</li>`).join("")}</ol>` : d ? `<div class="d">${d}</div>` : "";
+    it.innerHTML = `<div><div class="t">${t}</div>${dd}</div>`;
     it.appendChild(verdictButtons(id));
     const note = document.createElement("input");
     note.type = "text"; note.className = "note"; note.placeholder = "Not (sorun ne?)";
@@ -741,13 +953,21 @@ document.getElementById("camStart").onclick = async () => {
 function stopCam() { camStream?.getTracks().forEach(t => t.stop()); camStream = null; cam.srcObject = null; }
 document.getElementById("camStop").onclick = stopCam;
 
+// ---------- Komut kopyala ----------
+document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => {
+  const el = document.getElementById(b.dataset.copy), old = b.textContent;
+  try { await navigator.clipboard.writeText(el.textContent); b.textContent = "Kopyalandı"; }
+  catch (e) { getSelection().selectAllChildren(el); b.textContent = "Seçildi, ⌘ Command + C ile kopyala"; }
+  setTimeout(() => b.textContent = old, 2500);
+});
+
 // ---------- Rapor ----------
 const INFO_LABELS = { satici: "Satıcı", fiyat: "Fiyat", ilanModel: "İlan modeli", seri: "Seri no", cyc: "Batarya döngü", cap: "Batarya kapasite %" };
 function renderReport() {
   const by = s => ALL_ITEMS.filter(([id]) => state.r[id]?.s === s);
   const fails = by("fail"), oks = by("ok"), skips = by("skip");
   const todo = ALL_ITEMS.filter(([id]) => !state.r[id]?.s);
-  const critical = ["kilit-activation", "kilit-mdm", "kilit-findmy", "kilit-recovery", "kasa-sisme"];
+  const critical = ["kilit-activation", "kilit-mdm", "kilit-findmy", "kasa-sisme"];
   const critFail = fails.filter(([id]) => critical.includes(id));
   let html = `<p><span class="pill ok">${oks.length} geçti</span> <span class="pill bad">${fails.length} kaldı</span>
     <span class="pill">${skips.length} atlandı</span> <span class="pill warn">${todo.length} yapılmadı</span></p>`;
