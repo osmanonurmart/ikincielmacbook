@@ -144,15 +144,6 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
     <h2>Model: <span id="h1model"></span></h2>
     <select id="modelSel" style="max-width:420px;font-size:15px"></select>
     <div id="modelInfo" class="muted"></div>
-  </div>
-  <div class="card">
-    <h2>İlan / cihaz bilgileri</h2>
-    <div class="grid2">
-      <label class="f">Satıcı<input type="text" data-info="satici"></label>
-      <label class="f">Fiyat<input type="text" data-info="fiyat"></label>
-      <label class="f">İlandaki yapılandırma (RAM / SSD / renk)<input type="text" data-info="ilanModel"></label>
-      <label class="f">Cihazdaki seri no<input type="text" data-info="seri"></label>
-    </div>
     <p class="muted">Her maddeyi işaretle. "Kaldı" seçince not alanı açılır. Veriler sadece bu tarayıcıda saklanır.</p>
   </div>
   <div id="checklist"></div>
@@ -621,7 +612,7 @@ function buildSections(m) {
 // Sıra sadece sona ekleyerek değişmeli: eski QR'lar bu sıraya göre okunur.
 const UIDS = [...new Set(Object.values(MODELS).flatMap(m => buildSections(m).flatMap(s => s.items.map(i => i[0]))))];
 const SITE = location.protocol === "file:" ? "https://osmanonurmart.github.io/ikincielmacbook/" : location.origin + location.pathname;
-const INFO_KEYS = ["satici", "fiyat", "ilanModel", "seri", "cyc", "cap"];
+const INFO_KEYS = ["cyc", "cap"];
 const ST = { ok: "1", fail: "2", skip: "3" }, ST_R = { 1: "ok", 2: "fail", 3: "skip" };
 function encodeResult() {
   const i = {}, n = {};
@@ -643,7 +634,7 @@ function histSave(h) { try { localStorage.setItem(KEY + "-hist", JSON.stringify(
 function applyCode(code) {
   const d = decodeResult(code);
   state = d.state; save();
-  const label = [d.p.i.satici, d.p.i.ilanModel, MODELS[d.p.m]?.name].filter(Boolean).join(" · ");
+  const label = MODELS[d.p.m]?.name || "";
   const h = histLoad().filter(x => x.t !== d.p.t);
   h.unshift({ t: d.p.t, label, code }); histSave(h.slice(0, 20));
   return { date: new Date(d.p.t).toLocaleString("tr-TR"), label };
@@ -737,10 +728,6 @@ refresh();
 }
 renderChecklist();
 document.querySelectorAll("[data-verdict]").forEach(el => el.replaceWith(verdictButtons(el.dataset.verdict)));
-document.querySelectorAll("[data-info]").forEach(inp => {
-  inp.value = state.info[inp.dataset.info] || "";
-  inp.oninput = () => { state.info[inp.dataset.info] = inp.value; save(); };
-});
 
 // ---------- Model seçimi ----------
 const modelSel = document.getElementById("modelSel");
@@ -1034,7 +1021,7 @@ document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => {
 });
 
 // ---------- Rapor ----------
-const INFO_LABELS = { satici: "Satıcı", fiyat: "Fiyat", ilanModel: "İlan modeli", seri: "Seri no", cyc: "Batarya döngü", cap: "Batarya kapasite %" };
+const INFO_LABELS = { cyc: "Batarya döngü", cap: "Batarya kapasite %" };
 function renderReport() {
   const by = s => ALL_ITEMS.filter(([id]) => state.r[id]?.s === s);
   const fails = by("fail"), oks = by("ok"), skips = by("skip");
