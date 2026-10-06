@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İkinci El MacBook Testi</title>
+<style>
+:root {
+  --bg: #f5f5f7; --panel: #ffffff; --text: #1d1d1f; --muted: #6e6e73; --line: #d2d2d7;
+  --accent: #0071e3; --ok: #1a7f37; --ok-bg: #dafbe1; --bad: #cf222e; --bad-bg: #ffebe9;
+  --warn: #9a6700; --warn-bg: #fff8c5; --key: #e8e8ed; --key-on: #34c759;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000; --panel: #1c1c1e; --text: #f5f5f7; --muted: #98989d; --line: #38383a;
+    --accent: #2997ff; --ok: #3fb950; --ok-bg: #12261a; --bad: #ff6b6b; --bad-bg: #2d1416;
+    --warn: #d29922; --warn-bg: #2b2111; --key: #2c2c2e; --key-on: #30d158; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); }
+.top { display: flex; align-items: center; gap: 12px; padding: 10px 16px; flex-wrap: wrap; }
+.top h1 { font-size: 17px; margin: 0; }
+.progress { flex: 1; min-width: 160px; height: 8px; background: var(--key); border-radius: 4px; overflow: hidden; }
+.progress > div { height: 100%; background: var(--accent); width: 0; transition: width .2s; }
+#progText { font-size: 13px; color: var(--muted); white-space: nowrap; }
+nav { display: flex; gap: 4px; padding: 0 12px 8px; overflow-x: auto; }
+nav button { border: 0; background: none; color: var(--muted); padding: 6px 12px; border-radius: 8px;
+  font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; }
+nav button.active { background: var(--accent); color: #fff; }
+main { max-width: 1000px; margin: 0 auto; padding: 16px; }
+section.tab { display: none; }
+section.tab.active { display: block; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+.card h2 { font-size: 17px; margin: 0 0 8px; }
+.card h3 { font-size: 15px; margin: 12px 0 6px; }
+.muted { color: var(--muted); font-size: 13px; }
+.item { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.item:first-of-type { border-top: 0; }
+.item .t { font-weight: 600; }
+.item .d { color: var(--muted); font-size: 13px; }
+.item input.note { grid-column: 1 / -1; display: none; }
+.item.fail input.note, .item.has-note input.note { display: block; }
+.verdict { display: flex; gap: 4px; align-items: start; }
+.verdict button { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 8px;
+  padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+.verdict button.on.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.verdict button.on.fail { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.verdict button.on.skip { background: var(--key); }
+.verdict-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.btn { border: 0; background: var(--accent); color: #fff; border-radius: 8px; padding: 8px 14px; font: inherit;
+  font-size: 14px; cursor: pointer; margin: 2px 4px 2px 0; }
+.btn.sec { background: var(--key); color: var(--text); }
+.btn.danger { background: var(--bad); }
+input[type=text], input[type=number], textarea { width: 100%; padding: 7px 10px; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--bg); color: var(--text); font: inherit; font-size: 14px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+label.f { display: block; font-size: 13px; color: var(--muted); }
+code, pre { font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; overflow-x: auto; white-space: pre-wrap; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 13px; }
+.pill.ok { background: var(--ok-bg); color: var(--ok); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.alert { padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); font-size: 14px; margin-bottom: 12px; }
+
+/* klavye */
+.kb { display: flex; flex-direction: column; gap: 5px; overflow-x: auto; padding-bottom: 4px; }
+.kb .row { display: flex; gap: 5px; }
+.k { flex: 0 0 auto; width: 44px; height: 40px; border-radius: 6px; background: var(--key); display: flex;
+  align-items: center; justify-content: center; font-size: 12px; user-select: none; transition: background .1s; }
+.k.on { background: var(--key-on); color: #000; }
+.k.opt { border: 1px dashed var(--muted); }
+.k.down { outline: 2px solid var(--accent); }
+.k.dbl { background: var(--bad); color: #fff; }
+
+/* trackpad */
+#pad { width: 100%; height: 320px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
+  touch-action: none; display: block; cursor: crosshair; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.checks span { padding: 4px 10px; border-radius: 12px; background: var(--key); font-size: 13px; }
+.checks span.on { background: var(--key-on); color: #000; }
+
+/* ses */
+.meter { height: 16px; background: var(--key); border-radius: 8px; overflow: hidden; margin: 8px 0; }
+.meter > div { height: 100%; width: 0; background: var(--key-on); }
+video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; display: block; }
+
+/* tam ekran */
+#fs { position: fixed; inset: 0; z-index: 100; display: none; cursor: none; }
+#fs.show { display: block; }
+#fsHint { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); background: rgba(0,0,0,.7);
+  color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 14px; transition: opacity .5s; text-align: center; }
+@media print { header, .btn, .verdict button:not(.on) { display: none !important; } section.tab { display: block !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>İkinci El MacBook Testi</h1>
+    <div class="progress"><div id="progBar"></div></div>
+    <span id="progText"></span>
+  </div>
+  <nav id="nav"></nav>
+</header>
+
+<main>
+<!-- KONTROL LİSTESİ -->
+<section class="tab" id="tab-liste" data-title="Kontrol Listesi">
+  <div class="card">
+    <h2>İlan / cihaz bilgileri</h2>
+    <div class="grid2">
+      <label class="f">Satıcı<input type="text" data-info="satici"></label>
+      <label class="f">Fiyat<input type="text" data-info="fiyat"></label>
+      <label class="f">İlandaki model (yıl / çip / RAM / SSD)<input type="text" data-info="ilanModel"></label>
+      <label class="f">Cihazdaki seri no<input type="text" data-info="seri"></label>
+    </div>
+    <p class="muted">Her maddeyi işaretle. "Kaldı" seçince not alanı açılır. Veriler sadece bu tarayıcıda saklanır.</p>
+  </div>
+  <div id="checklist"></div>
+</section>
+
+<!-- SİSTEM / BATARYA -->
+<section class="tab" id="tab-sistem" data-title="Sistem & Batarya">
+  <div class="card">
+    <h2>Otomatik sistem kontrolü (Terminal)</h2>
+    <p>Test ettiğin MacBook'ta Terminal'i aç (Cmd+Boşluk → "Terminal") ve repodaki betiği çalıştır:</p>
+    <pre>bash macbook-kontrol.sh</pre>
+    <p class="muted">Betik şunları okur: model, seri no, çip, RAM, SSD, batarya döngü sayısı ve sağlığı, Activation Lock, Find My (Mac'imi Bul),
+      MDM/kurumsal kayıt, FileVault, SIP, SSD SMART durumu, kernel panic geçmişi, son kapanma nedenleri.
+      CPU stres testi için: <code>bash macbook-kontrol.sh --stres 5</code> (5 dakika).</p>
+  </div>
+  <div class="card">
+    <h2>Batarya değerlendirme</h2>
+    <p class="muted">Elle bakmak için: Option tuşuna basılıyken Apple menüsü → Sistem Bilgisi → Donanım → Güç. Ya da Ayarlar → Pil → Pil Sağlığı (ⓘ).</p>
+    <div class="grid2">
+      <label class="f">Döngü sayısı (Cycle Count)<input type="number" id="cyc" min="0"></label>
+      <label class="f">Maksimum kapasite (%)<input type="number" id="cap" min="0" max="120"></label>
+    </div>
+    <p id="batVerdict"></p>
+    <p class="muted">Apple'ın tasarım ömrü 2009 sonrası MacBook'lar için 1000 döngüdür. %80 altı = "Servis Önerilir".
+      Batarya değişimi pahalıdır, fiyattan düşmek için kullan.</p>
+  </div>
+  <div class="card">
+    <h2>Apple Diagnostics (donanım teşhisi)</h2>
+    <p><b>Apple Silicon (M1/M2/M3/M4…):</b> Mac'i kapat → güç tuşuna "Başlangıç seçenekleri yükleniyor" yazana kadar basılı tut → Cmd+D.</p>
+    <p><b>Intel:</b> Mac'i aç ve hemen D tuşuna basılı tut.</p>
+    <p class="muted">Sonuçta referans kodu çıkar (ör. ADP000 = sorun yok). Kodu kontrol listesindeki nota yaz.</p>
+  </div>
+  <div class="card">
+    <h2>Seri no doğrulama</h2>
+    <p>Seri numarasını <b>checkcoverage.apple.com</b> adresinde sorgula: model, satın alma tarihi geçerliliği ve garanti/AppleCare görünür.
+      Kutu, fatura ve cihaz altındaki seri no ile Sistem Bilgisi'ndeki seri no aynı olmalı.</p>
+  </div>
+</section>
+
+<!-- EKRAN -->
+<section class="tab" id="tab-ekran" data-title="Ekran">
+  <div class="card">
+    <h2>Ekran testleri</h2>
+    <p>Parlaklığı en yükseğe al. Tam ekranda tıkla / boşluk / → ile sonraki, ← ile önceki ekran, Esc ile çık.</p>
+    <button class="btn" data-fs="colors">Ölü / takılı piksel (düz renkler)</button>
+    <button class="btn" data-fs="black">Işık sızması (siyah)</button>
+    <button class="btn" data-fs="gradients">Geçiş / bantlanma</button>
+    <button class="btn" data-fs="pattern">Keskinlik / desen</button>
+    <h3>Neye bakılır</h3>
+    <ul>
+      <li><b>Düz renkler:</b> farklı renkte kalan nokta (takılı piksel), hep siyah nokta (ölü piksel), lekeler, sarımsı/pembe bölgeler.</li>
+      <li><b>Siyah:</b> odayı karart; kenarlardan ışık sızması, beyazımsı bulutlanma. Mini-LED modellerde (14/16" 2021+) parlak objelerin etrafında hafif hale normaldir.</li>
+      <li><b>Kaplama soyulması (staingate):</b> ekran kapalıyken eğik ışıkta lekeli/silinmiş görüntü — özellikle 2013-2017 Retina modellerde.</li>
+      <li><b>Flexgate (2016-2018 MBP 13"/15"):</b> ekranı geniş açıya (~110°+) açınca alt kenarda "sahne ışığı" gölgeleri veya görüntünün gitmesi.</li>
+      <li>Kapağı yavaşça açıp kapat: titreme, görüntü kopması, menteşe gevşekliği.</li>
+      <li>Parlaklık tuşları ve True Tone (Ayarlar → Ekranlar) çalışıyor mu.</li>
+    </ul>
+    <div class="verdict-row"><span>Ekran sonucu</span><span data-verdict="ekran-piksel"></span></div>
+  </div>
+</section>
+
+<!-- KLAVYE -->
+<section class="tab" id="tab-klavye" data-title="Klavye">
+  <div class="card">
+    <h2>Klavye testi</h2>
+    <div class="alert">Cmd+W / Cmd+Q sekmeyi kapatır — Cmd tuşlarına <b>tek başına</b> bas. F1–F12 için <b>fn</b> basılı tut (Touch Bar'lı modellerde F satırı yoktur, atla).</div>
+    <p>Düzen:
+      <button class="btn sec" id="kbIso">ISO (Türkçe Q / Avrupa)</button>
+      <button class="btn sec" id="kbAnsi">ANSI (ABD)</button>
+      <button class="btn sec" id="kbReset">Sıfırla</button>
+    </p>
+    <div class="kb" id="kb"></div>
+    <p><b id="kbCount"></b> &nbsp; <span class="muted">Son tuş: <code id="kbLast">—</code></span></p>
+    <p id="kbDbl" class="muted"></p>
+    <p class="muted">Kesik çizgili tuşlar (fn, Touch ID) tarayıcıya sinyal göndermez — elle kontrol et. Kırmızı = 60 ms içinde çift basma algılandı (kelebek klavye arızası belirtisi).</p>
+    <h3>Yazma denemesi</h3>
+    <textarea rows="3" placeholder="Buraya birkaç cümle yaz: tuş takılması, harf atlama, çift harf var mı?"></textarea>
+    <p class="muted">Ayrıca: klavye arka ışığı (Ayarlar → Klavye / Kontrol Merkezi), Touch ID'ye parmak ekleyip kilit açmayı dene, Touch Bar'ın her yerine dokun.</p>
+    <div class="verdict-row"><span>Tüm tuşlar çalışıyor</span><span data-verdict="klavye-tuslar"></span></div>
+  </div>
+</section>
+
+<!-- TRACKPAD -->
+<section class="tab" id="tab-trackpad" data-title="Trackpad">
+  <div class="card">
+    <h2>Trackpad testi</h2>
+    <p>Alanın içinde çiz, tıkla, sağ tıkla (iki parmak), iki parmakla kaydır, kıstır, sıkıca bas (Force Click).</p>
+    <div class="checks" id="padChecks"></div>
+    <canvas id="pad"></canvas>
+    <p><button class="btn sec" id="padClear">Temizle</button></p>
+    <p class="muted">Çizgi kesik kesik veya zıplıyorsa sensör sorunu olabilir. Trackpad'in <b>dört köşesine ve ortasına</b> fiziksel olarak bas: tıklama hissi her yerde aynı olmalı.
+      Tıklama sertse veya trackpad yükselmişse <b>şişmiş batarya</b> belirtisidir — almayın.</p>
+    <div class="verdict-row"><span>Trackpad sonucu</span><span data-verdict="trackpad"></span></div>
+  </div>
+</section>
+
+<!-- SES -->
+<section class="tab" id="tab-ses" data-title="Hoparlör & Mikrofon">
+  <div class="card">
+    <h2>Hoparlör</h2>
+    <p>Sesi önce yarıya, sonra en yükseğe al. Kulağını sırayla her hoparlöre yaklaştır.</p>
+    <button class="btn" data-tone="left">Sol</button>
+    <button class="btn" data-tone="right">Sağ</button>
+    <button class="btn" data-tone="both">İkisi</button>
+    <button class="btn" data-tone="bass">Bas taraması (cızırtı)</button>
+    <button class="btn" data-tone="sweep">Tam tarama 20 Hz–18 kHz</button>
+    <button class="btn sec" data-tone="stop">Durdur</button>
+    <p class="muted">Bas taramasında çatırtı, vızıltı, kasa titremesi = patlak hoparlör. Kulaklık takarak kulaklık çıkışını da dene.</p>
+    <div class="verdict-row"><span>Hoparlör sonucu</span><span data-verdict="hoparlor"></span></div>
+  </div>
+  <div class="card">
+    <h2>Mikrofon</h2>
+    <button class="btn" id="micStart">Mikrofonu başlat</button>
+    <button class="btn" id="micRec" disabled>5 sn kaydet ve dinlet</button>
+    <button class="btn sec" id="micStop" disabled>Durdur</button>
+    <div class="meter"><div id="micMeter"></div></div>
+    <p class="muted" id="micInfo">Konuşunca çubuk hareket etmeli. Çalışmazsa Sesli Notlar veya QuickTime ile dene.</p>
+    <audio id="micPlay" controls style="width:100%;display:none"></audio>
+    <div class="verdict-row"><span>Mikrofon sonucu</span><span data-verdict="mikrofon"></span></div>
+  </div>
+</section>
+
+<!-- KAMERA -->
+<section class="tab" id="tab-kamera" data-title="Kamera">
+  <div class="card">
+    <h2>Kamera</h2>
+    <button class="btn" id="camStart">Kamerayı aç</button>
+    <button class="btn sec" id="camStop">Kapat</button>
+    <p class="muted" id="camInfo">Yeşil ışık yanmalı, görüntü net ve lekesiz olmalı. Çalışmazsa Photo Booth ile dene.</p>
+    <video id="cam" autoplay playsinline muted></video>
+    <div class="verdict-row"><span>Kamera sonucu</span><span data-verdict="kamera"></span></div>
+  </div>
+</section>
+
+<!-- RAPOR -->
+<section class="tab" id="tab-rapor" data-title="Rapor">
+  <div class="card">
+    <h2>Özet</h2>
+    <div id="summary"></div>
+    <p>
+      <button class="btn" id="copyReport">Raporu kopyala</button>
+      <button class="btn sec" onclick="print()">Yazdır / PDF</button>
+      <button class="btn danger" id="resetAll">Her şeyi sıfırla</button>
+    </p>
+    <pre id="reportText"></pre>
+  </div>
+</section>
+</main>
+
+<div id="fs"><div id="fsHint"></div></div>
+
+<script>
+// ---------- Veri ----------
+const SECTIONS = [
+  { title: "Belgeler ve sahiplik", items: [
+    ["belge-fatura", "Fatura / kutu var", "Faturadaki ve kutudaki seri no cihazla aynı mı?"],
+    ["belge-seri", "Seri no doğrulandı", "checkcoverage.apple.com'da model ve tarih ilanla tutuyor mu?"],
+    ["belge-model", "Model / RAM / SSD ilanla aynı", "Apple menüsü → Bu Mac Hakkında. İlanda yazanla birebir karşılaştır."],
+  ]},
+  { title: "Kilitler (en kritik bölüm)", items: [
+    ["kilit-activation", "Activation Lock kapalı", "Betik çıktısında 'Activation Lock: Disabled' olmalı. Açıksa ASLA alma."],
+    ["kilit-findmy", "Mac'imi Bul kapalı, Apple ID çıkışı yapılmış", "Ayarlar → [isim] → Çıkış Yap. Satıcının önünde yapılmalı."],
+    ["kilit-mdm", "MDM / kurumsal kayıt yok", "Betikte 'Enrolled via DEP: No' ve 'MDM enrollment: No' olmalı. Şirket cihazı ise sıfırlamadan sonra kilitlenir."],
+    ["kilit-firmware", "Firmware (EFI) şifresi yok", "Intel: Option basılı açılışta şifre sormamalı. Apple Silicon: güç tuşu basılı açılışta Seçenekler'e şifresiz girilmeli."],
+    ["kilit-reset", "Satıcının önünde sıfırlandı", "Ayarlar → Genel → Aktar veya Sıfırla → Tüm İçerikleri ve Ayarları Sil. Kurulum ekranına gelip internete bağlanınca kilit uyarısı çıkmamalı."],
+  ]},
+  { title: "Dış görünüş ve kasa", items: [
+    ["kasa-ezik", "Kasada ezik / eğrilik yok", "Düz masada sallanıyor mu? Köşelerde darbe izi var mı?"],
+    ["kasa-vida", "Alt kapak vidaları sağlam", "Yalanmış / çizik vida başları cihazın açıldığını gösterir. Sor."],
+    ["kasa-sivi", "Sıvı teması izi yok", "Portların içinde yeşil/beyaz korozyon, klavye altında leke, yapışkan tuşlar."],
+    ["kasa-sisme", "Batarya şişmesi yok", "Trackpad yükselmiş, alt kasa bombeli, kapak tam kapanmıyor = şişik batarya. Alma."],
+    ["kasa-mentese", "Menteşe sağlam", "Ekran her açıda durmalı, kendi kendine düşmemeli; kapak kapalıyken ekranla klavye arası eşit."],
+    ["kasa-ayak", "Lastik ayaklar yerinde", ""],
+  ]},
+  { title: "Ekran", items: [
+    ["ekran-piksel", "Ölü piksel / leke / ışık sızması yok", "Ekran sekmesindeki testleri yap."],
+    ["ekran-kaplama", "Kaplama soyulması / çizik yok", "Ekran kapalıyken ışığa tutarak bak."],
+    ["ekran-flex", "Geniş açıda görüntü bozulmuyor", "Ekranı sonuna kadar aç-kapa (flexgate)."],
+    ["ekran-parlaklik", "Parlaklık ve True Tone çalışıyor", ""],
+    ["ekran-uyku", "Kapak kapanınca uyuyor, açınca uyanıyor", ""],
+  ]},
+  { title: "Klavye ve giriş", items: [
+    ["klavye-tuslar", "Tüm tuşlar çalışıyor", "Klavye sekmesi."],
+    ["klavye-isik", "Klavye arka ışığı çalışıyor", "Ortam karanlıkken veya Kontrol Merkezi'nden."],
+    ["klavye-touchid", "Touch ID çalışıyor", "Ayarlar → Touch ID ve Parola → Parmak izi ekle."],
+    ["klavye-touchbar", "Touch Bar düzgün (varsa)", "Her bölgesine dokun, ölü bölge veya titreme olmamalı."],
+    ["trackpad", "Trackpad ve Force Touch çalışıyor", "Trackpad sekmesi."],
+  ]},
+  { title: "Ses, kamera, kablosuz", items: [
+    ["hoparlor", "Hoparlörler temiz (cızırtı yok)", "Hoparlör sekmesi."],
+    ["kulaklik", "Kulaklık çıkışı çalışıyor", ""],
+    ["mikrofon", "Mikrofon çalışıyor", ""],
+    ["kamera", "Kamera çalışıyor", ""],
+    ["wifi", "Wi-Fi bağlanıyor ve stabil", "Bir video aç veya hız testi yap; kopma olmamalı."],
+    ["bluetooth", "Bluetooth çalışıyor", "Telefonunla veya kulaklığınla eşle."],
+  ]},
+  { title: "Portlar ve şarj", items: [
+    ["port-sarj", "Her porttan şarj oluyor", "Adaptörü her USB-C/MagSafe portuna tak; şarj simgesi gelmeli."],
+    ["port-veri", "Her port veri aktarıyor", "USB bellek / telefon tak, Finder'da görünmeli."],
+    ["port-diger", "HDMI / SD kart / MagSafe (varsa) çalışıyor", "MagSafe ışığı yanıyor mu?"],
+    ["port-adaptor", "Adaptör orijinal ve doğru watt", "Betik çıktısında adaptör watt değeri görünür."],
+  ]},
+  { title: "Batarya ve sağlık", items: [
+    ["bat-dongu", "Döngü sayısı makul", "Sistem & Batarya sekmesinde değerlendir."],
+    ["bat-kapasite", "Kapasite %80 üstü, 'Servis önerilir' yok", ""],
+    ["bat-fis", "Fiş çekilince kapanmıyor", "Şarj %50 civarındayken adaptörü çek, birkaç dakika kullan."],
+    ["saglik-diag", "Apple Diagnostics temiz", "Sistem & Batarya sekmesi."],
+    ["saglik-smart", "SSD SMART 'Verified'", "Betik çıktısı."],
+    ["saglik-panic", "Kernel panic / ani kapanma geçmişi yok", "Betik çıktısı."],
+    ["saglik-stres", "Stres testinde kapanma / aşırı ısınma yok", "bash macbook-kontrol.sh --stres 5 — fan çalışmalı, cihaz kapanmamalı."],
+  ]},
+  { title: "Yazılım", items: [
+    ["yaz-macos", "macOS güncel / güncellenebilir", "Model hâlâ güncel macOS alıyor mu? Eski Intel modeller desteği kaybediyor."],
+  ]},
+];
+const ALL_ITEMS = SECTIONS.flatMap(s => s.items);
+
+// ---------- Depolama ----------
+const KEY = "macbook-test-v1";
+let state = { r: {}, info: {} };
+try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+// ---------- Sekmeler ----------
+const nav = document.getElementById("nav");
+const tabs = [...document.querySelectorAll("section.tab")];
+function showTab(id) {
+  tabs.forEach(t => t.classList.toggle("active", t.id === id));
+  [...nav.children].forEach(b => b.classList.toggle("active", b.dataset.id === id));
+  if (id !== "tab-kamera") stopCam();
+  if (id === "tab-rapor") renderReport();
+  if (id === "tab-trackpad") sizePad();
+  try { localStorage.setItem(KEY + "-tab", id); } catch (e) {}
+}
+tabs.forEach(t => {
+  const b = document.createElement("button");
+  b.textContent = t.dataset.title; b.dataset.id = t.id;
+  b.onclick = () => showTab(t.id);
+  nav.appendChild(b);
+});
+
+// ---------- Kontrol listesi ----------
+const STATUS = [["ok", "Geçti"], ["fail", "Kaldı"], ["skip", "Atla"]];
+function verdictButtons(id) {
+  const wrap = document.createElement("span");
+  wrap.className = "verdict"; wrap.dataset.vid = id;
+  STATUS.forEach(([s, label]) => {
+    const b = document.createElement("button");
+    b.textContent = label; b.className = s;
+    b.onclick = () => setStatus(id, state.r[id]?.s === s ? null : s);
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+function setStatus(id, s) {
+  state.r[id] = Object.assign(state.r[id] || {}, { s });
+  save(); refresh();
+}
+function refresh() {
+  document.querySelectorAll(".verdict").forEach(w => {
+    const s = state.r[w.dataset.vid]?.s;
+    [...w.children].forEach(b => b.classList.toggle("on", b.classList.contains(s)));
+  });
+  document.querySelectorAll(".item").forEach(el => {
+    const r = state.r[el.dataset.id] || {};
+    el.classList.toggle("fail", r.s === "fail");
+    el.classList.toggle("has-note", !!r.n);
+  });
+  const done = ALL_ITEMS.filter(([id]) => state.r[id]?.s).length;
+  document.getElementById("progBar").style.width = (done / ALL_ITEMS.length * 100) + "%";
+  const fails = ALL_ITEMS.filter(([id]) => state.r[id]?.s === "fail").length;
+  document.getElementById("progText").textContent = `${done}/${ALL_ITEMS.length} kontrol` + (fails ? ` · ${fails} sorun` : "");
+}
+
+const cl = document.getElementById("checklist");
+SECTIONS.forEach(sec => {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `<h2>${sec.title}</h2>`;
+  sec.items.forEach(([id, t, d]) => {
+    const it = document.createElement("div");
+    it.className = "item"; it.dataset.id = id;
+    it.innerHTML = `<div><div class="t">${t}</div>${d ? `<div class="d">${d}</div>` : ""}</div>`;
+    it.appendChild(verdictButtons(id));
+    const note = document.createElement("input");
+    note.type = "text"; note.className = "note"; note.placeholder = "Not (sorun ne?)";
+    note.value = state.r[id]?.n || "";
+    note.oninput = () => { state.r[id] = Object.assign(state.r[id] || {}, { n: note.value }); save(); };
+    it.appendChild(note);
+    card.appendChild(it);
+  });
+  cl.appendChild(card);
+});
+document.querySelectorAll("[data-verdict]").forEach(el => el.replaceWith(verdictButtons(el.dataset.verdict)));
+document.querySelectorAll("[data-info]").forEach(inp => {
+  inp.value = state.info[inp.dataset.info] || "";
+  inp.oninput = () => { state.info[inp.dataset.info] = inp.value; save(); };
+});
+
+// ---------- Batarya ----------
+const cyc = document.getElementById("cyc"), cap = document.getElementById("cap");
+cyc.value = state.info.cyc || ""; cap.value = state.info.cap || "";
+function batEval() {
+  state.info.cyc = cyc.value; state.info.cap = cap.value; save();
+  const c = +cyc.value, p = +cap.value, out = [];
+  if (cyc.value !== "") {
+    if (c < 300) out.push(`<span class="pill ok">Döngü ${c}: düşük, iyi</span>`);
+    else if (c < 700) out.push(`<span class="pill warn">Döngü ${c}: orta</span>`);
+    else if (c < 1000) out.push(`<span class="pill bad">Döngü ${c}: yüksek, değişim yakın</span>`);
+    else out.push(`<span class="pill bad">Döngü ${c}: ömrünü doldurmuş</span>`);
+  }
+  if (cap.value !== "") {
+    if (p >= 90) out.push(`<span class="pill ok">Kapasite %${p}: iyi</span>`);
+    else if (p >= 80) out.push(`<span class="pill warn">Kapasite %${p}: kabul edilebilir</span>`);
+    else out.push(`<span class="pill bad">Kapasite %${p}: değişim gerekli</span>`);
+  }
+  if (cyc.value !== "" && cap.value !== "" && c < 50 && p < 85)
+    out.push(`<span class="pill warn">Düşük döngüye göre kapasite düşük — batarya değişmiş veya uzun süre bekletilmiş olabilir</span>`);
+  document.getElementById("batVerdict").innerHTML = out.join(" ");
+}
+cyc.oninput = cap.oninput = batEval; batEval();
+
+// ---------- Tam ekran testleri ----------
+const FS = {
+  colors: ["#000", "#fff", "#f00", "#0f0", "#00f", "#808080", "#0ff", "#f0f", "#ff0"],
+  black: ["#000"],
+  gradients: [
+    "linear-gradient(90deg,#000,#fff)", "linear-gradient(90deg,#000,#f00)",
+    "linear-gradient(90deg,#000,#0f0)", "linear-gradient(90deg,#000,#00f)",
+    "linear-gradient(90deg,red,yellow,lime,cyan,blue,magenta,red)",
+  ],
+  pattern: [
+    "repeating-conic-gradient(#000 0 25%,#fff 0 50%) 0 0/2px 2px",
+    "repeating-linear-gradient(90deg,#000 0 1px,#fff 1px 2px)",
+    "repeating-linear-gradient(0deg,#000 0 1px,#fff 1px 2px)",
+    "repeating-conic-gradient(#000 0 25%,#fff 0 50%) 0 0/80px 80px",
+  ],
+};
+const fs = document.getElementById("fs"), fsHint = document.getElementById("fsHint");
+let fsList = [], fsIdx = 0, hintTimer;
+function fsShow() {
+  fs.style.background = fsList[fsIdx];
+  fsHint.textContent = `${fsIdx + 1}/${fsList.length} — tıkla/→ sonraki, ← önceki, Esc çıkış`;
+  fsHint.style.opacity = 1; clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => fsHint.style.opacity = 0, 1500);
+}
+function fsOpen(name) {
+  fsList = FS[name]; fsIdx = 0; fs.classList.add("show"); fsShow();
+  (fs.requestFullscreen || fs.webkitRequestFullscreen)?.call(fs)?.catch?.(() => {});
+}
+function fsClose() {
+  fs.classList.remove("show");
+  if (document.fullscreenElement || document.webkitFullscreenElement)
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+}
+function fsStep(d) {
+  fsIdx += d;
+  if (fsIdx >= fsList.length || fsIdx < 0) return fsClose();
+  fsShow();
+}
+document.querySelectorAll("[data-fs]").forEach(b => b.onclick = () => fsOpen(b.dataset.fs));
+fs.onclick = () => fsStep(1);
+["fullscreenchange", "webkitfullscreenchange"].forEach(ev => document.addEventListener(ev, () => {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) fs.classList.remove("show");
+}));
+
+// ---------- Klavye ----------
+const ROW_F = [["Escape","esc",1.3],...Array.from({length:12},(_, i)=>[`F${i+1}`,`F${i+1}`]),["TouchID","Touch ID",1,1]];
+const LETTERS = s => s.split("").map(c => [/\d/.test(c) ? `Digit${c}` : `Key${c}`, c]);
+function layout(iso) {
+  return [
+    ROW_F,
+    [[iso ? "IntlBackslash" : "Backquote", iso ? "§ \"" : "`"], ...LETTERS("1234567890"), ["Minus","-"], ["Equal","="], ["Backspace","⌫",1.5]],
+    [["Tab","⇥",1.5], ...LETTERS("QWERTYUIOP"), ["BracketLeft","["], ["BracketRight","]"], ...(iso ? [["Enter","↩",1.3]] : [["Backslash","\\",1.3]])],
+    [["CapsLock","⇪",1.8], ...LETTERS("ASDFGHJKL"), ["Semicolon",";"], ["Quote","'"], ...(iso ? [["Backslash","\\"]] : [["Enter","↩",2]])],
+    [["ShiftLeft","⇧",iso ? 1.3 : 2.3], ...(iso ? [["Backquote","<>"]] : []), ...LETTERS("ZXCVBNM"), ["Comma",","], ["Period","."], ["Slash","/"], ["ShiftRight","⇧",2.3]],
+    [["Fn","fn",1,1], ["ControlLeft","⌃"], ["AltLeft","⌥"], ["MetaLeft","⌘",1.3], ["Space","",5.6], ["MetaRight","⌘",1.3], ["AltRight","⌥"], ["ArrowLeft","←"], ["ArrowUp","↑"], ["ArrowDown","↓"], ["ArrowRight","→"]],
+  ];
+}
+let kbIso = state.info.kbIso !== false, kbHit = new Set(), lastDown = {}, dblKeys = new Set();
+const kbEl = document.getElementById("kb");
+function renderKb() {
+  kbEl.innerHTML = "";
+  layout(kbIso).forEach(row => {
+    const r = document.createElement("div"); r.className = "row";
+    row.forEach(([code, label, w = 1, opt]) => {
+      const k = document.createElement("div");
+      k.className = "k" + (opt ? " opt" : "") + (kbHit.has(code) ? " on" : "") + (dblKeys.has(code) ? " dbl" : "");
+      k.style.width = (44 * w + 5 * (w - 1)) + "px";
+      k.textContent = label; k.dataset.code = code;
+      if (opt) k.onclick = () => { kbHit.has(code) ? kbHit.delete(code) : kbHit.add(code); renderKb(); };
+      if (opt) k.title = "Tarayıcı algılamaz — elle test edip tıkla";
+      r.appendChild(k);
+    });
+    kbEl.appendChild(r);
+  });
+  const all = layout(kbIso).flat().filter(k => k[0]);
+  const hit = all.filter(k => kbHit.has(k[0])).length;
+  document.getElementById("kbCount").textContent = `${hit}/${all.length} tuş test edildi`;
+  document.getElementById("kbDbl").textContent = dblKeys.size ? `Çift basma şüphesi: ${[...dblKeys].join(", ")}` : "";
+  document.getElementById("kbIso").classList.toggle("sec", !kbIso);
+  document.getElementById("kbAnsi").classList.toggle("sec", kbIso);
+}
+document.getElementById("kbIso").onclick = () => { kbIso = true; state.info.kbIso = true; save(); renderKb(); };
+document.getElementById("kbAnsi").onclick = () => { kbIso = false; state.info.kbIso = false; save(); renderKb(); };
+document.getElementById("kbReset").onclick = () => { kbHit.clear(); dblKeys.clear(); renderKb(); };
+const kbTab = document.getElementById("tab-klavye");
+document.addEventListener("keydown", e => {
+  if (fs.classList.contains("show")) {
+    if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); fsStep(1); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); fsStep(-1); }
+    else if (e.key === "Escape") fsClose();
+    return;
+  }
+  if (!kbTab.classList.contains("active") || e.target.tagName === "TEXTAREA") return;
+  if (!e.metaKey || e.code.startsWith("Meta")) e.preventDefault();
+  const now = performance.now();
+  if (!e.repeat && lastDown[e.code] && now - lastDown[e.code] < 60) dblKeys.add(e.code);
+  lastDown[e.code] = now;
+  kbHit.add(e.code);
+  document.getElementById("kbLast").textContent = `${e.code} (${e.key})`;
+  renderKb();
+  kbEl.querySelector(`[data-code="${e.code}"]`)?.classList.add("down");
+});
+document.addEventListener("keyup", e => kbEl.querySelector(`[data-code="${e.code}"]`)?.classList.remove("down"));
+// Caps Lock macOS'ta sadece durum değişince olay gönderir
+renderKb();
+
+// ---------- Trackpad ----------
+const PAD_EVENTS = [["click","Sol tık"],["right","Sağ tık"],["drag","Sürükle / çiz"],["vscroll","Dikey kaydırma"],
+  ["hscroll","Yatay kaydırma"],["pinch","Kıstırma (zoom)"],["force","Force Click"],["dbl","Çift tık"]];
+const padSeen = new Set();
+const padChecks = document.getElementById("padChecks");
+function renderPadChecks() {
+  padChecks.innerHTML = PAD_EVENTS.map(([k, l]) => `<span class="${padSeen.has(k) ? "on" : ""}">${l}</span>`).join("");
+}
+function seen(k) { if (!padSeen.has(k)) { padSeen.add(k); renderPadChecks(); } }
+renderPadChecks();
+const pad = document.getElementById("pad"), ctx = pad.getContext("2d");
+let drawing = false, last = null;
+function sizePad() {
+  const r = pad.getBoundingClientRect(); if (!r.width) return;
+  pad.width = r.width * devicePixelRatio; pad.height = r.height * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+function pos(e) { const r = pad.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+pad.addEventListener("pointerdown", e => { if (e.button === 0) { drawing = true; last = pos(e); seen("click"); } });
+pad.addEventListener("pointermove", e => {
+  if (!drawing) return;
+  const p = pos(e);
+  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue("--accent"); ctx.lineWidth = 3; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(...last); ctx.lineTo(...p); ctx.stroke();
+  if (Math.hypot(p[0] - last[0], p[1] - last[1]) > 2) seen("drag");
+  last = p;
+});
+addEventListener("pointerup", () => drawing = false);
+pad.addEventListener("contextmenu", e => { e.preventDefault(); seen("right"); });
+pad.addEventListener("dblclick", () => seen("dbl"));
+pad.addEventListener("wheel", e => {
+  e.preventDefault();
+  if (e.ctrlKey) return seen("pinch");
+  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) seen("vscroll"); else if (e.deltaX) seen("hscroll");
+}, { passive: false });
+pad.addEventListener("gesturestart", e => { e.preventDefault(); seen("pinch"); });
+pad.addEventListener("gesturechange", e => e.preventDefault());
+pad.addEventListener("webkitmouseforcedown", () => seen("force"));
+pad.addEventListener("pointerdown", e => { if (e.pressure > 0.9 && e.pointerType === "mouse") seen("force"); });
+document.getElementById("padClear").onclick = () => { ctx.clearRect(0, 0, pad.width, pad.height); padSeen.clear(); renderPadChecks(); };
+addEventListener("resize", sizePad);
+
+// ---------- Hoparlör ----------
+let actx, toneNodes = [];
+function ac() { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); return actx; }
+function stopTone() { toneNodes.forEach(n => { try { n.stop(); } catch (e) {} }); toneNodes = []; }
+function tone({ pan = 0, f1 = 440, f2 = f1, dur = 1.5, type = "sine" }) {
+  stopTone();
+  const a = ac(), o = a.createOscillator(), g = a.createGain();
+  const p = a.createStereoPanner ? a.createStereoPanner() : null;
+  o.type = type; const t = a.currentTime;
+  o.frequency.setValueAtTime(f1, t);
+  if (f2 !== f1) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.5, t + 0.05);
+  g.gain.setValueAtTime(0.5, t + dur - 0.05); g.gain.linearRampToValueAtTime(0, t + dur);
+  o.connect(g);
+  if (p) { p.pan.value = pan; g.connect(p).connect(a.destination); } else g.connect(a.destination);
+  o.start(t); o.stop(t + dur); toneNodes.push(o);
+}
+const TONES = {
+  left: () => tone({ pan: -1 }), right: () => tone({ pan: 1 }), both: () => tone({}),
+  bass: () => tone({ f1: 40, f2: 400, dur: 8 }), sweep: () => tone({ f1: 20, f2: 18000, dur: 12 }),
+  stop: stopTone,
+};
+document.querySelectorAll("[data-tone]").forEach(b => b.onclick = () => TONES[b.dataset.tone]());
+
+// ---------- Mikrofon ----------
+let micStream, micRaf;
+const micInfo = document.getElementById("micInfo");
+document.getElementById("micStart").onclick = async () => {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const a = ac(), src = a.createMediaStreamSource(micStream), an = a.createAnalyser();
+    an.fftSize = 1024; src.connect(an);
+    const buf = new Float32Array(an.fftSize);
+    const loop = () => {
+      an.getFloatTimeDomainData(buf);
+      let peak = 0; for (const v of buf) peak = Math.max(peak, Math.abs(v));
+      document.getElementById("micMeter").style.width = Math.min(100, peak * 140) + "%";
+      micRaf = requestAnimationFrame(loop);
+    };
+    loop();
+    micInfo.textContent = "Mikrofon açık: " + (micStream.getAudioTracks()[0].label || "varsayılan");
+    document.getElementById("micRec").disabled = !window.MediaRecorder;
+    document.getElementById("micStop").disabled = false;
+  } catch (e) { micInfo.textContent = "Mikrofona erişilemedi: " + e.message + " — Sesli Notlar ile dene."; }
+};
+document.getElementById("micRec").onclick = () => {
+  const rec = new MediaRecorder(micStream), chunks = [];
+  rec.ondataavailable = e => chunks.push(e.data);
+  rec.onstop = () => {
+    const el = document.getElementById("micPlay");
+    el.src = URL.createObjectURL(new Blob(chunks, { type: rec.mimeType }));
+    el.style.display = "block"; el.play();
+    micInfo.textContent = "Kayıt bitti, dinletiliyor.";
+  };
+  rec.start(); micInfo.textContent = "Kaydediliyor (5 sn)… konuş.";
+  setTimeout(() => rec.stop(), 5000);
+};
+document.getElementById("micStop").onclick = () => {
+  micStream?.getTracks().forEach(t => t.stop()); cancelAnimationFrame(micRaf);
+  document.getElementById("micMeter").style.width = 0;
+  document.getElementById("micRec").disabled = document.getElementById("micStop").disabled = true;
+};
+
+// ---------- Kamera ----------
+let camStream;
+const cam = document.getElementById("cam"), camInfo = document.getElementById("camInfo");
+document.getElementById("camStart").onclick = async () => {
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1920 }, height: { ideal: 1080 } } });
+    cam.srcObject = camStream;
+    cam.onloadedmetadata = () => camInfo.textContent = `${camStream.getVideoTracks()[0].label || "Kamera"} — ${cam.videoWidth}×${cam.videoHeight}`;
+  } catch (e) { camInfo.textContent = "Kameraya erişilemedi: " + e.message + " — Photo Booth ile dene."; }
+};
+function stopCam() { camStream?.getTracks().forEach(t => t.stop()); camStream = null; cam.srcObject = null; }
+document.getElementById("camStop").onclick = stopCam;
+
+// ---------- Rapor ----------
+const INFO_LABELS = { satici: "Satıcı", fiyat: "Fiyat", ilanModel: "İlan modeli", seri: "Seri no", cyc: "Batarya döngü", cap: "Batarya kapasite %" };
+function renderReport() {
+  const by = s => ALL_ITEMS.filter(([id]) => state.r[id]?.s === s);
+  const fails = by("fail"), oks = by("ok"), skips = by("skip");
+  const todo = ALL_ITEMS.filter(([id]) => !state.r[id]?.s);
+  const critical = ["kilit-activation", "kilit-mdm", "kilit-findmy", "kilit-firmware", "kasa-sisme"];
+  const critFail = fails.filter(([id]) => critical.includes(id));
+  let html = `<p><span class="pill ok">${oks.length} geçti</span> <span class="pill bad">${fails.length} kaldı</span>
+    <span class="pill">${skips.length} atlandı</span> <span class="pill warn">${todo.length} yapılmadı</span></p>`;
+  if (critFail.length) html += `<div class="alert" style="background:var(--bad-bg);color:var(--bad)"><b>Kritik sorun:</b> ${critFail.map(i => i[1]).join(", ")}. Bu cihazı alma.</div>`;
+  else if (fails.length) html += `<div class="alert">Sorunlar var — onarım maliyetini fiyattan düş veya vazgeç.</div>`;
+  else if (!todo.length) html += `<div class="alert" style="background:var(--ok-bg);color:var(--ok)">Tüm kontroller tamam, sorun bulunmadı.</div>`;
+  if (fails.length) html += "<h3>Sorunlar</h3><ul>" + fails.map(([id, t]) => `<li>${t}${state.r[id].n ? ` — ${state.r[id].n}` : ""}</li>`).join("") + "</ul>";
+  if (todo.length) html += "<h3>Yapılmayan kontroller</h3><ul>" + todo.map(([, t]) => `<li>${t}</li>`).join("") + "</ul>";
+  document.getElementById("summary").innerHTML = html;
+
+  const sym = { ok: "✔", fail: "✘", skip: "–" };
+  let txt = "İKİNCİ EL MACBOOK TEST RAPORU\n" + new Date().toLocaleString("tr-TR") + "\n\n";
+  for (const [k, l] of Object.entries(INFO_LABELS)) if (state.info[k]) txt += `${l}: ${state.info[k]}\n`;
+  SECTIONS.forEach(sec => {
+    txt += `\n## ${sec.title}\n`;
+    sec.items.forEach(([id, t]) => {
+      const r = state.r[id] || {};
+      txt += `${sym[r.s] || "?"} ${t}${r.n ? ` — ${r.n}` : ""}\n`;
+    });
+  });
+  document.getElementById("reportText").textContent = txt;
+}
+document.getElementById("copyReport").onclick = async () => {
+  const txt = document.getElementById("reportText").textContent;
+  try { await navigator.clipboard.writeText(txt); alert("Rapor kopyalandı."); }
+  catch (e) { prompt("Kopyala:", txt); }
+};
+document.getElementById("resetAll").onclick = () => {
+  if (!confirm("Tüm sonuçlar ve notlar silinsin mi?")) return;
+  state = { r: {}, info: {} }; save(); location.reload();
+};
+
+// ---------- Başlat ----------
+refresh();
+let startTab = "tab-liste";
+try { startTab = localStorage.getItem(KEY + "-tab") || startTab; } catch (e) {}
+showTab(document.getElementById(startTab) ? startTab : "tab-liste");
+</script>
+</body>
+</html>
