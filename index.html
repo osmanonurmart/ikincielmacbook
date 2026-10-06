@@ -17,15 +17,14 @@
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-.step { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); }
-.step:first-child { border-top: 0; }
-.step input { width: 22px; height: 22px; margin-top: 2px; accent-color: var(--ok); }
-.step .st { font-weight: 600; }
-.step.done .st { color: var(--muted); text-decoration: line-through; }
-.step ul { margin: 4px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
-.step .go { margin-top: 6px; }
-.step-h { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--accent); margin: 16px 0 0; }
-.step.warn .st { color: var(--bad); }
+.wiz-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.wiz-head .progress { margin-bottom: 12px; }
+.wiz-head h2 { font-size: 21px; }
+#wizPanels .verdict-row { display: none; }
+.wiz-nav { display: flex; justify-content: space-between; gap: 8px; position: sticky; bottom: 0; padding: 12px 0;
+  background: linear-gradient(transparent, var(--bg) 30%); }
+.wiz-nav .btn { flex: 1; padding: 14px; font-size: 16px; max-width: 260px; }
+.wiz-item-card .item:first-of-type { border-top: 0; }
 
 #qr { background: #fff; padding: 8px; border-radius: 8px; width: min(320px, 100%); }
 #qr svg { display: block; width: 100%; height: auto; }
@@ -124,14 +123,22 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 </header>
 
 <main>
-<!-- ADIM ADIM -->
-<section class="tab" id="tab-adim" data-title="Adım Adım">
-  <div class="card">
-    <h2>Yapılacaklar sırası</h2>
-    <p class="muted">Yukarıdan aşağıya git. Bitirdiğin adımın kutusunu işaretle. Düğmeler seni ilgili sekmeye götürür; işin bitince bu sekmeye geri dön.</p>
-    <p id="stepProg"></p>
-    <div id="steps"></div>
-    <p><button class="btn sec" id="stepReset">İşaretleri temizle</button></p>
+<!-- ADIM ADIM TEST -->
+<section class="tab" id="tab-adim" data-title="Adım Adım Test">
+  <div class="card wiz-head">
+    <div class="wiz-top">
+      <span id="wizCount" class="muted"></span>
+      <button class="btn sec" id="wizRestart" type="button">Baştan başla</button>
+    </div>
+    <div class="progress"><div id="wizBar"></div></div>
+    <h2 id="wizTitle"></h2>
+    <div id="wizIntro"></div>
+  </div>
+  <div id="wizPanels"></div>
+  <div id="wizItems"></div>
+  <div class="wiz-nav">
+    <button class="btn sec" id="wizPrev" type="button">← Geri</button>
+    <button class="btn" id="wizNext" type="button">İleri →</button>
   </div>
 </section>
 
@@ -139,7 +146,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 <section class="tab" id="tab-liste" data-title="Kontrol Listesi">
   <div class="card">
     <h2>Mac'i ilk kez kullanıyorsan önce bunu oku</h2>
-    <p>Ne zaman ne yapacağın <b>Adım Adım</b> sekmesinde sırayla yazıyor. Bu listeyi o adımlarda işaretleyeceksin.</p>
+    <p>Testi yapmanın en kolay yolu <b>Adım Adım Test</b> sekmesi: seni her testten sırayla geçirir. Bu sayfa aynı maddelerin toplu halidir.</p>
     <h3>Mac'te temel şeyler</h3>
     <ul>
       <li><b>Elma menüsü ()</b>: ekranın sol üst köşesindeki elma. Bu Mac Hakkında, Sistem Ayarları, Kapat, Yeniden Başlat buradadır.</li>
@@ -153,7 +160,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
       <li><b>Pencere kapatma</b>: pencerenin sol üstündeki kırmızı nokta. <b>Tam ekrandan çıkma</b>: Esc tuşu.</li>
     </ul>
   </div>
-  <div class="card">
+  <div class="card" id="pModel">
     <h2>Model: <span id="h1model"></span></h2>
     <select id="modelSel" style="max-width:420px;font-size:15px"></select>
     <div id="modelInfo" class="muted"></div>
@@ -164,7 +171,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 
 <!-- SİSTEM / BATARYA -->
 <section class="tab" id="tab-sistem" data-title="Sistem & Batarya">
-  <div class="card">
+  <div class="card" id="pTerminal">
     <h2>1. Otomatik kontrol (Terminal)</h2>
     <p>Terminal, Mac'e yazıyla komut verdiğin bir penceredir. Bu komut cihazda hiçbir şeyi değiştirmez, sadece bilgileri okuyup ekrana yazar.</p>
     <ol>
@@ -180,13 +187,15 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
     <button class="btn" data-copy="cmd1">Komutu kopyala</button>
     <p class="muted">Kontrol ettikleri: model ve M2 doğrulaması, seri no, RAM, SSD sağlığı, pil döngü sayısı ve kapasitesi, Etkinleştirme Kilidi, Mac'imi Bul,
       şirket yönetimi (MDM), çökme geçmişi.</p>
-    <h3>Stres testi (5 dakika)</h3>
+  </div>
+  <div class="card" id="pStres">
+    <h2>Stres testi (5 dakika)</h2>
     <p>İşlemciyi 5 dakika tam güçte çalıştırır. Cihaz kapanırsa veya donarsa sorun var demektir. Aynı şekilde Terminal'e yapıştır, Enter'a bas, bitmesini bekle.
       Erken durdurmak için <b>⌃ Control + C</b>.</p>
     <pre id="cmd2">curl -sL https://raw.githubusercontent.com/osmanonurmart/ikincielmacbook/main/macbook-kontrol.sh | bash -s -- --stres 5</pre>
     <button class="btn" data-copy="cmd2">Stres komutunu kopyala</button>
   </div>
-  <div class="card">
+  <div class="card" id="pBattery">
     <h2>2. Pil (batarya) değerlendirme</h2>
     <p>Değerleri Terminal çıktısından veya elle al:</p>
     <ul>
@@ -201,7 +210,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
     <p class="muted">M2 piller 1000 döngü için tasarlanmıştır. %80'in altında pil 'Servis Önerilir' durumuna geçer.
       Pil değişimi pahalıdır, sorun varsa fiyattan düşmek için kullan.</p>
   </div>
-  <div class="card">
+  <div class="card" id="pDiag">
     <h2>3. Apple Diagnostics (donanım testi)</h2>
     <p>Apple'ın kendi donanım testidir, 2-5 dakika sürer.</p>
     <ol>
@@ -227,7 +236,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 
 <!-- EKRAN -->
 <section class="tab" id="tab-ekran" data-title="Ekran">
-  <div class="card">
+  <div class="card" id="pEkran">
     <h2>Ekran testleri</h2>
     <ol>
       <li>Parlaklığı en yükseğe al: klavyenin en üst sırasındaki güneş simgeli <b>F2</b> tuşuna birkaç kez bas.</li>
@@ -258,7 +267,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 
 <!-- KLAVYE -->
 <section class="tab" id="tab-klavye" data-title="Klavye">
-  <div class="card">
+  <div class="card" id="pKlavye">
     <h2>Klavye testi</h2>
     <ol>
       <li>Klavyedeki her tuşa sırayla bir kez bas. Basılan tuş aşağıdaki şekilde yeşile döner.</li>
@@ -285,7 +294,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 
 <!-- TRACKPAD -->
 <section class="tab" id="tab-trackpad" data-title="Trackpad">
-  <div class="card">
+  <div class="card" id="pTrackpad">
     <h2>Trackpad testi</h2>
     <p>Trackpad, klavyenin altındaki büyük cam yüzeydir. Aşağıdaki gri alanın üzerinde şunları yap. Yaptığın her hareket yukarıda yeşile döner:</p>
     <ul>
@@ -308,7 +317,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 
 <!-- SES -->
 <section class="tab" id="tab-ses" data-title="Hoparlör & Mikrofon">
-  <div class="card">
+  <div class="card" id="pHoparlor">
     <h2>Hoparlör</h2>
     <ol>
       <li>Ses açma tuşu klavyenin en üst sırasındaki hoparlör simgeli <b>F12</b>'dir (F11 kısar, F10 sessize alır). Sesi önce yarıya getir.</li>
@@ -325,7 +334,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
     <p class="muted">Bas taramasında çatırtı, vızıltı, kasa titremesi = patlak hoparlör. Kulaklık takarak kulaklık çıkışını da dene.</p>
     <div class="verdict-row"><span>Hoparlör sonucu</span><span data-verdict="hoparlor"></span></div>
   </div>
-  <div class="card">
+  <div class="card" id="pMic">
     <h2>Mikrofon</h2>
     <ol>
       <li><b>Mikrofonu başlat</b>'a bas. Tarayıcı izin isterse <b>İzin Ver</b>'e tıkla.</li>
@@ -344,7 +353,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
 
 <!-- KAMERA -->
 <section class="tab" id="tab-kamera" data-title="Kamera">
-  <div class="card">
+  <div class="card" id="pKamera">
     <h2>Kamera</h2>
     <ol>
       <li><b>Kamerayı aç</b>'a bas. Tarayıcı izin isterse <b>İzin Ver</b>'e tıkla.</li>
@@ -388,7 +397,7 @@ video { width: 100%; max-width: 640px; border-radius: 12px; background: #000; di
     <h2>Bu cihaza yüklenen testler</h2>
     <div id="histList"></div>
   </div>
-  <div class="card">
+  <div class="card" id="pSummary">
     <h2>Özet</h2>
     <div id="summary"></div>
     <p>
@@ -668,11 +677,14 @@ let ALL_ITEMS = SECTIONS.flatMap(s => s.items);
 const nav = document.getElementById("nav");
 const tabs = [...document.querySelectorAll("section.tab")];
 function showTab(id) {
+  if (id !== "tab-adim") returnPanels();
   tabs.forEach(t => t.classList.toggle("active", t.id === id));
   [...nav.children].forEach(b => b.classList.toggle("active", b.dataset.id === id));
   if (id !== "tab-kamera") stopCam();
   if (id === "tab-rapor") renderReport();
   if (id === "tab-trackpad") sizePad();
+  if (id === "tab-adim") renderWiz();
+  if (id === "tab-liste") renderChecklist();
   try { localStorage.setItem(KEY + "-tab", id); } catch (e) {}
 }
 tabs.forEach(t => {
@@ -722,19 +734,7 @@ SECTIONS.forEach(sec => {
   const card = document.createElement("div");
   card.className = "card";
   card.innerHTML = `<h2>${sec.title}</h2>`;
-  sec.items.forEach(([id, t, d]) => {
-    const it = document.createElement("div");
-    it.className = "item"; it.dataset.id = id;
-    const dd = Array.isArray(d) ? `<ol class="d">${d.map(x => `<li>${x}</li>`).join("")}</ol>` : d ? `<div class="d">${d}</div>` : "";
-    it.innerHTML = `<div><div class="t">${t}</div>${dd}</div>`;
-    it.appendChild(verdictButtons(id));
-    const note = document.createElement("input");
-    note.type = "text"; note.className = "note"; note.placeholder = "Not (sorun ne?)";
-    note.value = state.r[id]?.n || "";
-    note.oninput = () => { state.r[id] = Object.assign(state.r[id] || {}, { n: note.value }); save(); };
-    it.appendChild(note);
-    card.appendChild(it);
-  });
+  sec.items.forEach(x => card.appendChild(makeItem(x)));
   cl.appendChild(card);
 });
 refresh();
@@ -757,6 +757,7 @@ modelSel.onchange = () => {
   MODEL = modelSel.value; state.info.model = MODEL; save();
   SECTIONS = buildSections(MODELS[MODEL]); ALL_ITEMS = SECTIONS.flatMap(s => s.items);
   renderModel(); renderChecklist(); renderKb();
+  if (document.getElementById("tab-adim").classList.contains("active")) renderWiz();
 };
 renderModel();
 
@@ -885,7 +886,6 @@ function renderKb() {
 document.getElementById("kbIso").onclick = () => { kbIso = true; state.info.kbIso = true; save(); renderKb(); };
 document.getElementById("kbAnsi").onclick = () => { kbIso = false; state.info.kbIso = false; save(); renderKb(); };
 document.getElementById("kbReset").onclick = () => { kbHit.clear(); dblKeys.clear(); renderKb(); };
-const kbTab = document.getElementById("tab-klavye");
 document.addEventListener("keydown", e => {
   if (fs.classList.contains("show")) {
     if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); fsStep(1); }
@@ -893,7 +893,7 @@ document.addEventListener("keydown", e => {
     else if (e.key === "Escape") fsClose();
     return;
   }
-  if (!kbTab.classList.contains("active") || e.target.tagName === "TEXTAREA") return;
+  if (!kbEl.offsetParent || e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
   if (!e.metaKey || e.code.startsWith("Meta")) e.preventDefault();
   const now = performance.now();
   if (!e.repeat && lastDown[e.code] && now - lastDown[e.code] < 60) dblKeys.add(e.code);
@@ -1033,57 +1033,97 @@ document.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => {
   setTimeout(() => b.textContent = old, 2500);
 });
 
-// ---------- Adım adım ----------
-const STEPS = [
-  ["Evden çıkmadan önce"],
-  ["Telefonunu şarj et. Yanına kablolu kulaklık ve varsa USB-C bellek al.", []],
-  ["Bu siteyi telefonunda bir kez aç, Rapor sekmesindeki QR'ı başka bir ekrandan okutmayı dene.", []],
-  ["Satıcının yanında"],
-  ["Dış kontrol (Mac kapalıyken)", ["Kasada ezik, çatlak olmamalı.", "Ters çevir: alt kasa düz, vidalar sağlam olmalı.", "Trackpad kabarık olmamalı (kabarıksa pil şişmiştir, alma).", "Telefon feneriyle port içlerine bak: pas olmamalı."], "tab-liste", "Dış görünüş maddeleri"],
-  ["Satıcı Mac'i açsın ve kendi şifresiyle giriş yapsın.", ["Testlerin hepsini onun hesabı açıkken yapacaksın."]],
-  ["Wi-Fi'a bağlan.", ["Sağ üstteki Wi-Fi simgesi → ağı seç. Yoksa telefonunun hotspot'unu aç."]],
-  ["Safari'de bu siteyi aç ve modelini seç.", ["Dock'taki pusula simgesi → adres çubuğuna osmanonurmart.github.io/ikincielmacbook yaz.", "Kontrol Listesi sekmesinin en üstünden modeli seç."], "tab-liste", "Model seç"],
-  ["Terminal kontrolünü çalıştır.", ["Komutu kopyala → Terminal'e yapıştır → Enter.", "Kırmızı (✘) satır varsa not al."], "tab-sistem", "Sistem & Batarya"],
-  ["Kilitleri kontrol et.", ["Mac'imi Bul kapalı mı?", "Şirket yönetimi (MDM) yok mu?", "Terminal çıktısında Activation Lock kapalı mı?"], "tab-liste", "Kilitler"],
-  ["Model, RAM, SSD ve seri numarasını ilanla karşılaştır.", ["Bu Mac Hakkında penceresine bak.", "Seri noyu telefondan checkcoverage.apple.com'da sorgula."], "tab-liste", "Belgeler"],
-  ["Pil döngü sayısı ve kapasitesini yaz.", [], "tab-sistem", "Sistem & Batarya"],
-  ["Ekran testleri.", ["Renk testleri, ışık sızması, çatlak.", "Kapağı kapatıp aç (uyku testi)."], "tab-ekran", "Ekran"],
-  ["Klavye testi.", ["Bütün tuşlar, klavye ışığı, Touch ID."], "tab-klavye", "Klavye"],
-  ["Trackpad testi.", ["Tıklama, sağ tık, kaydırma, Force Click."], "tab-trackpad", "Trackpad"],
-  ["Hoparlör ve mikrofon testi.", ["Sol/sağ ses, bas taraması, kulaklık, mikrofon kaydı."], "tab-ses", "Hoparlör & Mikrofon"],
-  ["Kamera testi.", ["Görüntü net olmalı, yeşil ışık yanmalı."], "tab-kamera", "Kamera"],
-  ["Portları dene.", ["Şarj kablosunu her porta tak: pil simgesinde şimşek çıkmalı.", "Belleği veya telefonu her porta tak."], "tab-liste", "Portlar ve şarj"],
-  ["Bluetooth'a telefonunu bağla.", [], "tab-liste", "Kontrol listesi"],
-  ["Stres testini çalıştır (5 dakika).", ["Terminal'de stres komutunu çalıştır.", "Beklerken kontrol listesindeki kalan maddeleri işaretle. Mac kapanmamalı."], "tab-sistem", "Stres komutu"],
-  ["Apple Diagnostics çalıştır.", ["Mac'i kapat → güç tuşuna basılı tut → Cmd+D.", "Sonuç ADP000 olmalı.", "Bitince Mac'i yeniden başlat, satıcı tekrar giriş yapsın, bu siteyi yeniden aç."], "tab-sistem", "Nasıl yapılır"],
-  ["Rapor sekmesindeki QR'ın fotoğrafını çek.", ["Telefonla okutup açıldığını gör.", "Bu adımı sıfırlamadan önce mutlaka yap, sıfırlayınca sonuçlar Mac'ten silinir."], "tab-rapor", "Rapor"],
-  ["Parayı vermeden önce"],
-  ["Satıcının önünde Mac'i sıfırlat.", ["Sistem Ayarları → Genel → Aktar veya Sıfırla → Tüm İçerikleri ve Ayarları Sil.", "Satıcı Mac şifresini ve Apple hesabı şifresini girer."]],
-  ["Kurulum ekranında dil seç ve Wi-Fi'a bağlan.", ["\"Etkinleştirme Kilidi\" veya \"Uzaktan Yönetim\" ekranı ÇIKMAMALI. Çıkarsa alma."], null, null, true],
+// ---------- Adım adım test (sihirbaz) ----------
+// panel: başka sekmedeki kartı geçici olarak bu adıma taşır; items: bu adımda işaretlenecek kontrol maddeleri
+const WIZ = [
+  { t: "Başlamadan önce", intro: `<ol>
+      <li>Satıcı Mac'i açsın ve kendi şifresiyle giriş yapsın. Testlerin hepsini onun hesabı açıkken yapacaksın.</li>
+      <li>Mac'i internete bağla: ekranın sağ üstündeki Wi-Fi simgesine (yelpaze) tıkla → ağı seç → şifreyi yaz. Yoksa telefonunun hotspot'unu aç.</li>
+      <li>Aşağıdan test ettiğin modeli seç. Bilmiyorsan sol üstteki elma () → <b>Bu Mac Hakkında</b> penceresinde yazar.</li>
+      <li>Her adımda yazanları yap, sonra maddeleri <b>Geçti</b> veya <b>Kaldı</b> olarak işaretle ve <b>İleri</b>'ye bas.</li>
+    </ol>`, panels: ["pModel"] },
+  { t: "Dış görünüş", intro: "Mac'i kapalıyken elinde çevirerek incele.", items: ["kasa-ezik", "kasa-vida", "kasa-sivi", "kasa-sisme", "kasa-mentese"] },
+  { t: "Otomatik kontrol (Terminal)", intro: "Aşağıdaki adımlarla komutu çalıştır. Sonuçlar gelince Terminal penceresini kapatma, sonraki adımlarda ona bakacaksın.",
+    panels: ["pTerminal"], items: ["saglik-smart", "saglik-panic"] },
+  { t: "Kilitler", intro: "Bu bölüm en önemlisi. Burada bir sorun varsa cihazı alma.", items: ["kilit-activation", "kilit-findmy", "kilit-mdm"] },
+  { t: "Model, RAM, SSD, seri no", items: ["belge-model", "belge-ram", "belge-fatura", "belge-seri"] },
+  { t: "Pil", panels: ["pBattery"], items: ["bat-dongu", "bat-kapasite"] },
+  { t: "Ekran", intro: "Aşağıdaki düğmelerle tam ekran testlerini sırayla yap.", panels: ["pEkran"], items: ["ekran-piksel", "kasa-catlak", "ekran-iz", "ekran-promotion", "ekran-xdr"] },
+  { t: "Parlaklık ve uyku", items: ["ekran-parlaklik", "ekran-uyku"] },
+  { t: "Klavye", panels: ["pKlavye"], items: ["klavye-tuslar", "klavye-isik", "klavye-touchid", "klavye-touchbar"] },
+  { t: "Trackpad", panels: ["pTrackpad"], items: ["trackpad"] },
+  { t: "Hoparlör ve kulaklık", panels: ["pHoparlor"], items: ["hoparlor", "kulaklik"] },
+  { t: "Mikrofon", panels: ["pMic"], items: ["mikrofon"] },
+  { t: "Kamera", panels: ["pKamera"], items: ["kamera"] },
+  { t: "Wi-Fi ve Bluetooth", items: ["wifi", "bluetooth"] },
+  { t: "Portlar ve şarj", items: ["port-sarj", "port-veri", "port-hdmi", "port-adaptor"] },
+  { t: "Şarjsız çalışma", items: ["bat-fis"] },
+  { t: "Stres testi (5 dakika)", intro: "Komutu Terminal'de çalıştır ve 5 dakika bekle. Mac kapanmamalı.", panels: ["pStres"], items: ["saglik-stres"] },
+  { t: "Apple Diagnostics", intro: "Bu adımda Mac yeniden başlayacak. Başlamadan önce sayfanın adresini aklında tut; bitince satıcı tekrar giriş yapsın, siteyi yeniden aç. Kaldığın adımdan devam eder.",
+    panels: ["pDiag"], items: ["saglik-diag"] },
+  { t: "Sonucu telefonuna al", intro: "<b>Sıfırlamadan önce mutlaka yap.</b> Sıfırlayınca bu sayfadaki sonuçlar Mac'ten silinir.", panels: ["qrCard"], onShow: () => renderReport() },
+  { t: "Sıfırlama (parayı vermeden önce)", intro: "Bu son test. QR'ın fotoğrafını çektiysen başla.", items: ["kilit-reset"] },
+  { t: "Bitti", intro: "Özet aşağıda. Kritik bir sorun varsa kırmızı uyarı çıkar.", panels: ["pSummary"], onShow: () => renderReport() },
 ];
-function renderSteps() {
-  const done = state.info.steps || {};
-  const el = document.getElementById("steps");
-  el.innerHTML = "";
-  let n = 0, total = 0, doneN = 0;
-  STEPS.forEach(([t, sub, tab, label, warn]) => {
-    if (!sub) { el.insertAdjacentHTML("beforeend", `<div class="step-h">${t}</div>`); return; }
-    const k = ++n; total++; if (done[k]) doneN++;
-    const d = document.createElement("label");
-    d.className = "step" + (done[k] ? " done" : "") + (warn ? " warn" : "");
-    d.innerHTML = `<input type="checkbox" ${done[k] ? "checked" : ""}><div><div class="st">${k}. ${t}</div>` +
-      (sub.length ? `<ul>${sub.map(x => `<li>${x}</li>`).join("")}</ul>` : "") +
-      (tab ? `<button class="btn sec go" type="button">${label} →</button>` : "") + `</div>`;
-    d.querySelector("input").onchange = e => {
-      state.info.steps = Object.assign(state.info.steps || {}, { [k]: e.target.checked }); save(); renderSteps();
-    };
-    if (tab) d.querySelector(".go").onclick = e => { e.preventDefault(); showTab(tab); scrollTo(0, 0); };
-    el.appendChild(d);
-  });
-  document.getElementById("stepProg").innerHTML = `<b>${doneN}/${total}</b> adım tamamlandı`;
+const panelHome = {};
+function returnPanels() {
+  Object.entries(panelHome).forEach(([id, [parent, next]]) => parent.insertBefore(document.getElementById(id), next));
+  for (const k in panelHome) delete panelHome[k];
+  stopCam();
 }
-document.getElementById("stepReset").onclick = () => { state.info.steps = {}; save(); renderSteps(); };
-renderSteps();
+function makeItem([id, t, d], inWizard) {
+  const it = document.createElement("div");
+  it.className = "item"; it.dataset.id = id;
+  // Sihirbazda "… sekmesine geç" satırlarını gösterme: test zaten aynı adımda.
+  if (inWizard) d = Array.isArray(d) ? d.filter(x => !/sekme/i.test(x)) : (/sekme/i.test(d || "") ? "" : d);
+  const dd = Array.isArray(d) ? (d.length ? `<ol class="d">${d.map(x => `<li>${x}</li>`).join("")}</ol>` : "") : d ? `<div class="d">${d}</div>` : "";
+  it.innerHTML = `<div><div class="t">${t}</div>${dd}</div>`;
+  it.appendChild(verdictButtons(id));
+  const note = document.createElement("input");
+  note.type = "text"; note.className = "note"; note.placeholder = "Not (sorun ne?)";
+  note.value = state.r[id]?.n || "";
+  note.oninput = () => { state.r[id] = Object.assign(state.r[id] || {}, { n: note.value }); save(); };
+  it.appendChild(note);
+  return it;
+}
+function renderWiz() {
+  returnPanels();
+  let i = Math.min(Math.max(+state.info.wiz || 0, 0), WIZ.length - 1);
+  const w = WIZ[i];
+  document.getElementById("wizCount").textContent = `Adım ${i + 1} / ${WIZ.length}`;
+  document.getElementById("wizBar").style.width = ((i + 1) / WIZ.length * 100) + "%";
+  document.getElementById("wizTitle").textContent = w.t;
+  document.getElementById("wizIntro").innerHTML = w.intro ? (w.intro.startsWith("<") ? w.intro : `<p>${w.intro}</p>`) : "";
+  const pc = document.getElementById("wizPanels");
+  (w.panels || []).forEach(id => {
+    const el = document.getElementById(id);
+    panelHome[id] = [el.parentNode, el.nextSibling];
+    pc.appendChild(el);
+  });
+  const ic = document.getElementById("wizItems");
+  ic.innerHTML = "";
+  const items = (w.items || []).map(id => ALL_ITEMS.find(x => x[0] === id)).filter(Boolean);
+  if (items.length) {
+    const card = document.createElement("div");
+    card.className = "card wiz-item-card";
+    card.innerHTML = `<h2>Sonuçları işaretle</h2>`;
+    items.forEach(x => card.appendChild(makeItem(x, true)));
+    ic.appendChild(card);
+  }
+  refresh();
+  if (w.panels?.includes("pTrackpad")) sizePad();
+  w.onShow?.();
+  document.getElementById("wizPrev").disabled = i === 0;
+  document.getElementById("wizNext").textContent = i === WIZ.length - 1 ? "Raporu aç →" : "İleri →";
+}
+function wizGo(d) {
+  const i = (+state.info.wiz || 0) + d;
+  if (i >= WIZ.length) { returnPanels(); return showTab("tab-rapor"); }
+  state.info.wiz = Math.max(0, i); save(); renderWiz(); scrollTo(0, 0);
+}
+document.getElementById("wizPrev").onclick = () => wizGo(-1);
+document.getElementById("wizNext").onclick = () => wizGo(1);
+document.getElementById("wizRestart").onclick = () => { state.info.wiz = 0; save(); renderWiz(); scrollTo(0, 0); };
 
 // ---------- Rapor ----------
 const INFO_LABELS = { cyc: "Batarya döngü", cap: "Batarya kapasite %" };
