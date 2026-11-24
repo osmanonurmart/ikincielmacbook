@@ -33,22 +33,39 @@
 <main>
   <h1>2+1 Ses Sistemi Testi</h1>
   <p class="warn">Sesi kısık başlat, yavaş yavaş aç. Tıkla: çalar. Tekrar tıkla: durur.</p>
-  <label class="vol">Ses <input id="vol" type="range" min="0" max="100" value="40"> <span id="volv">40</span></label>
+  <label class="vol">Ses <input id="vol" type="range" min="0" max="100" value="60"> <span id="volv">60</span></label>
   <div id="list"></div>
   <div class="now" id="now"></div>
 </main>
 <script>
 let ctx, master, current = null;
 
+// iPhone sessiz modda Web Audio'yu susturur. Sesi "medya" gibi çalmaya zorla.
+let unlocked = false;
+function silentWav() {
+  const n = 800, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+function unlock() {
+  if (unlocked) return; unlocked = true;
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  try { const a = new Audio(silentWav()); a.setAttribute('playsinline', ''); a.loop = true; a.play().catch(() => {}); } catch (e) {}
+}
+
 function audio() {
+  unlock();
   if (!ctx) {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     master = ctx.createGain();
     master.connect(ctx.destination);
     setVol();
   }
-  if (ctx.state === 'suspended') ctx.resume();
-  return ctx;
+  return ctx.state === 'running' ? Promise.resolve() : ctx.resume();
 }
 function setVol() {
   const v = +document.getElementById('vol').value;
@@ -115,6 +132,9 @@ function kick(t0, f = 55) {
 
 const D = 8; // sabit tonların süresi (sn)
 const tests = [
+  { g: 'Önce bunu dene' },
+  { t: 'Ses kontrolü (bip)', d: 'Her hoparlörden duyulur. Bu da duyulmuyorsa sorun bağlantıda veya cihaz sesinde.', dur: 3,
+    run: t => tone(t, 3, 440, 440, 0, 0.5) },
   { g: 'Subwoofer (dip sesler)' },
   { t: 'Dip tarama 20 → 150 Hz', d: 'Yavaşça yükselir. Bir yerde ses kayboluyor, birden patlıyor veya cızırdıyorsa not al.', dur: 20,
     run: t => tone(t, 20, 20, 150) },
@@ -165,8 +185,9 @@ tests.forEach(x => {
   list.appendChild(b);
 });
 
-function play(x, b) {
-  audio();
+async function play(x, b) {
+  try { await audio(); } catch (e) {}
+  if (ctx.state !== 'running') { now.textContent = 'Ses başlatılamadı. Sayfayı yenileyip tekrar dene.'; return; }
   const t0 = ctx.currentTime + 0.05;
   const nodes = x.run(t0);
   b.classList.add('on');
