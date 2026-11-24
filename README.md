@@ -1,30 +1,10 @@
-# İkinci El MacBook M2 Test Uygulaması
+# 2+1 Ses Sistemi Testi
 
-İkinci el MacBook M2 (Air 13/15, Pro 13/14/16) alırken satıcının yanında yapılacak tüm kontroller. Sayfada modeli seç, kontrol listesi o modele göre değişir.
+2 uydu hoparlör + 1 subwoofer sistemleri için basit test sayfası. Her bar bir test sesi çalar; tekrar tıklayınca durur.
+Sesler tarayıcıda üretilir, dosya indirilmez.
 
-## Kullanım
+- **Subwoofer:** 20→150 Hz tarama, 25–100 Hz sabit tonlar, titreşim/tıkırtı taraması, kick davul, dip gürültü
+- **Sub ↔ uydu geçişi:** 50→300 Hz tarama, faz testi (normal / ters)
+- **Uydular:** sadece sol, sadece sağ, orta, 20 Hz–20 kHz tam tarama
 
-1. Bu repoyu test edeceğin MacBook'a indir (GitHub → Code → Download ZIP) ya da USB bellekle getir.
-2. **Terminal'de otomatik kontrol:**
-   ```
-   bash macbook-kontrol.sh
-   bash macbook-kontrol.sh --stres 5   # + 5 dk CPU stres testi
-   ```
-   Okur: model, seri no, RAM, SSD, batarya döngü/kapasite, Activation Lock, Mac'imi Bul,
-   MDM/kurumsal kayıt, FileVault, SIP, SSD SMART, kernel panic ve kapanma geçmişi. Hiçbir şeyi değiştirmez.
-3. **`index.html`'i Safari veya Chrome'da aç:** kontrol listesi (42 madde), ekran (ölü piksel, ışık sızması,
-   bantlanma), klavye (tüm tuşlar + çift basma tespiti), trackpad (tık, jest, Force Click), hoparlör
-   (sol/sağ, cızırtı taraması), mikrofon, kamera ve rapor.
-
-Kamera/mikrofon dosyadan açıldığında çalışmazsa Chrome'da aç veya Photo Booth / Sesli Notlar ile dene.
-GitHub Pages açarsan (Settings → Pages → main branch) uygulama doğrudan linkten de çalışır.
-
-## Asla alma
-- Activation Lock / Mac'imi Bul açık ve satıcı kapatmıyor
-- MDM / DEP (kurumsal) kaydı var
-- Batarya şişmiş (trackpad yükselmiş, kasa bombeli)
-
-## Sonuçları telefona alma (QR)
-Rapor sekmesinde bir QR kod çıkar. Telefonla okutunca veya fotoğrafını çekip sonra açınca bütün sonuçlar ve notlar
-telefonda açılır. Sonuçlar linkin içindedir, hiçbir sunucuya gönderilmez.
-`vendor/` klasöründeki kütüphaneler: qrcode-generator (MIT, Kazuhiko Arase), lz-string (MIT, Pieroxy).
+Sesi kısık başlat. Bilgisayarın kendi hoparlörü veya kulaklık 40–50 Hz altını genelde veremez; testi sisteme bağlıyken yap.
